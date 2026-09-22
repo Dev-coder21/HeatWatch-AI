@@ -1,0 +1,10 @@
+{
+  "model": "Random Forest Regressor",
+  "target": "next-day Tmax",
+  "method": "SHAP TreeExplainer",
+  "random_state": 42,
+  "sample_size_global": 1000,
+  "locations_explained": 5,
+  "top_features_per_location": 10,
+  "interpretation_note": "SHAP values explain the contribution of model features to the temperature prediction. They describe model behavior and should not be interpreted as causal effects."
+}

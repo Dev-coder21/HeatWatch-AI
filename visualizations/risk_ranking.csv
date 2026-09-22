@@ -1,0 +1,6 @@
+rank,location_id,city,state,predicted_temperature_max,heatwave_probability,risk_score,risk_category
+1,SHIM_01,Shimla,Himachal Pradesh,11.201,0.0,10.59,Low
+2,MUM_01,Mumbai,Maharashtra,31.1913333333333,0.0,10.5,Low
+3,PUNE_01,Pune,Maharashtra,30.348000000000035,0.0,9.38,Low
+4,DEL_01,Delhi,Delhi,18.402000000000022,0.0,5.0,Low
+5,BENG_01,Bengaluru,Karnataka,25.643666666666658,0.0,4.12,Low

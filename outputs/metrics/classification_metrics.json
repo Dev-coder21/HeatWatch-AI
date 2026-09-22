@@ -1,0 +1,77 @@
+{
+    "heatwave_classifier": {
+        "model": "RandomForestClassifier",
+        "random_state": 42,
+        "validation": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "roc_auc": 0.8570840197693574,
+            "confusion_matrix": [
+                [
+                    1819,
+                    2
+                ],
+                [
+                    4,
+                    0
+                ]
+            ]
+        },
+        "test": {
+            "precision": 0.9090909090909091,
+            "recall": 0.3125,
+            "f1": 0.46511627906976744,
+            "roc_auc": 0.9270688092582264,
+            "confusion_matrix": [
+                [
+                    1792,
+                    1
+                ],
+                [
+                    22,
+                    10
+                ]
+            ]
+        }
+    },
+    "severity_classifier": {
+        "model": "RandomForestClassifier",
+        "random_state": 42,
+        "validation": {
+            "macro_f1": 0.4991767288693743,
+            "weighted_f1": 0.9961652857765815,
+            "confusion_matrix": [
+                [
+                    0,
+                    4
+                ],
+                [
+                    2,
+                    1819
+                ]
+            ]
+        },
+        "test": {
+            "macro_f1": 0.44521431213995033,
+            "weighted_f1": 0.9796989819965205,
+            "confusion_matrix": [
+                [
+                    6,
+                    16,
+                    1
+                ],
+                [
+                    3,
+                    1789,
+                    1
+                ],
+                [
+                    3,
+                    6,
+                    0
+                ]
+            ]
+        }
+    }
+}

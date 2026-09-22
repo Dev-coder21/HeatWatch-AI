@@ -1,0 +1,34 @@
+{
+    "model": "RandomForestRegressor",
+    "random_state": 42,
+    "training_end": "2022-12-31",
+    "validation_end": "2023-12-31",
+    "features": [
+        "temp_max_lag_1",
+        "temp_max_lag_2",
+        "temp_max_lag_3",
+        "temp_max_rolling_3",
+        "temp_max_rolling_7",
+        "temp_min_lag_1",
+        "humidity_lag_1",
+        "wind_lag_1",
+        "precip_3d",
+        "temp_trend_3d",
+        "departure",
+        "normal_max_temp",
+        "month",
+        "day_of_year",
+        "latitude",
+        "longitude"
+    ],
+    "validation": {
+        "MAE": 0.9646778082191788,
+        "RMSE": 1.3265445181600883,
+        "R2": 0.9635798224520652
+    },
+    "test": {
+        "MAE": 1.0542759817351604,
+        "RMSE": 1.4194917806211989,
+        "R2": 0.962754229816282
+    }
+}

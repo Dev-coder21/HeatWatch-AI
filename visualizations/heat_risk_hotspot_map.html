@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_c01a50b38f2d4e42f45ca94098a3c2f9 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_c01a50b38f2d4e42f45ca94098a3c2f9" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_c01a50b38f2d4e42f45ca94098a3c2f9 = L.map(
+                "map_c01a50b38f2d4e42f45ca94098a3c2f9",
+                {
+                    center: [22.05734, 75.74228000000001],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 5,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_4532b05453f6978ed454bc67664beb26 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_4532b05453f6978ed454bc67664beb26.addTo(map_c01a50b38f2d4e42f45ca94098a3c2f9);
+        
+    
+            var circle_marker_510aec6fbf1676ca4dbfbabbf3654822 = L.circleMarker(
+                [31.1048, 77.1734],
+                {"bubblingMouseEvents": true, "color": "#3388ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#3388ff", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_c01a50b38f2d4e42f45ca94098a3c2f9);
+        
+    
+        var popup_734aa99038ff72271f5a6913ae9a85aa = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_18dfbdfdbc9cfa5a264f7fa555aec98f = $(`<div id="html_18dfbdfdbc9cfa5a264f7fa555aec98f" style="width: 100.0%; height: 100.0%;"><b>Shimla</b><br>Risk Score: 10.59<br>Risk Category: Low<br>Predicted Tmax: 11.20 °C<br>Heatwave Probability: 0.00%</div>`)[0];
+                popup_734aa99038ff72271f5a6913ae9a85aa.setContent(html_18dfbdfdbc9cfa5a264f7fa555aec98f);
+            
+        
+
+        circle_marker_510aec6fbf1676ca4dbfbabbf3654822.bindPopup(popup_734aa99038ff72271f5a6913ae9a85aa)
+        ;
+
+        
+    
+    
+            circle_marker_510aec6fbf1676ca4dbfbabbf3654822.bindTooltip(
+                `<div>
+                     Shimla — Risk 10.59
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_d62055a20619c9f74be6bb3bf26b2a69 = L.circleMarker(
+                [19.076, 72.8777],
+                {"bubblingMouseEvents": true, "color": "#3388ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#3388ff", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_c01a50b38f2d4e42f45ca94098a3c2f9);
+        
+    
+        var popup_3165788eb22ccf26387b4507f93f97e3 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_e7ee05d4dbd652cb6a32eb36c2efe999 = $(`<div id="html_e7ee05d4dbd652cb6a32eb36c2efe999" style="width: 100.0%; height: 100.0%;"><b>Mumbai</b><br>Risk Score: 10.50<br>Risk Category: Low<br>Predicted Tmax: 31.19 °C<br>Heatwave Probability: 0.00%</div>`)[0];
+                popup_3165788eb22ccf26387b4507f93f97e3.setContent(html_e7ee05d4dbd652cb6a32eb36c2efe999);
+            
+        
+
+        circle_marker_d62055a20619c9f74be6bb3bf26b2a69.bindPopup(popup_3165788eb22ccf26387b4507f93f97e3)
+        ;
+
+        
+    
+    
+            circle_marker_d62055a20619c9f74be6bb3bf26b2a69.bindTooltip(
+                `<div>
+                     Mumbai — Risk 10.50
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_43a15c90b3e3ddb4f476f9f05b563dda = L.circleMarker(
+                [18.5204, 73.8567],
+                {"bubblingMouseEvents": true, "color": "#3388ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#3388ff", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_c01a50b38f2d4e42f45ca94098a3c2f9);
+        
+    
+        var popup_be8ce11ae0dcd0758e3c5558bd6d9a50 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_a1a4546849851fbf162dced2a11e235a = $(`<div id="html_a1a4546849851fbf162dced2a11e235a" style="width: 100.0%; height: 100.0%;"><b>Pune</b><br>Risk Score: 9.38<br>Risk Category: Low<br>Predicted Tmax: 30.35 °C<br>Heatwave Probability: 0.00%</div>`)[0];
+                popup_be8ce11ae0dcd0758e3c5558bd6d9a50.setContent(html_a1a4546849851fbf162dced2a11e235a);
+            
+        
+
+        circle_marker_43a15c90b3e3ddb4f476f9f05b563dda.bindPopup(popup_be8ce11ae0dcd0758e3c5558bd6d9a50)
+        ;
+
+        
+    
+    
+            circle_marker_43a15c90b3e3ddb4f476f9f05b563dda.bindTooltip(
+                `<div>
+                     Pune — Risk 9.38
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_20625954c75215626c81add427a04bdd = L.circleMarker(
+                [28.6139, 77.209],
+                {"bubblingMouseEvents": true, "color": "#3388ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#3388ff", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_c01a50b38f2d4e42f45ca94098a3c2f9);
+        
+    
+        var popup_e8e39a435590d6039974ef53d90b321d = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_8e26c97ed51269361832e5bec8184a03 = $(`<div id="html_8e26c97ed51269361832e5bec8184a03" style="width: 100.0%; height: 100.0%;"><b>Delhi</b><br>Risk Score: 5.00<br>Risk Category: Low<br>Predicted Tmax: 18.40 °C<br>Heatwave Probability: 0.00%</div>`)[0];
+                popup_e8e39a435590d6039974ef53d90b321d.setContent(html_8e26c97ed51269361832e5bec8184a03);
+            
+        
+
+        circle_marker_20625954c75215626c81add427a04bdd.bindPopup(popup_e8e39a435590d6039974ef53d90b321d)
+        ;
+
+        
+    
+    
+            circle_marker_20625954c75215626c81add427a04bdd.bindTooltip(
+                `<div>
+                     Delhi — Risk 5.00
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var circle_marker_567a8dbeeb66c159c137bbc7fb0218f9 = L.circleMarker(
+                [12.9716, 77.5946],
+                {"bubblingMouseEvents": true, "color": "#3388ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#3388ff", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 8, "stroke": true, "weight": 3}
+            ).addTo(map_c01a50b38f2d4e42f45ca94098a3c2f9);
+        
+    
+        var popup_b702a65ca47a4cffeb0df504c0bb57bb = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_1e1e6305c6548a486515f52893ba4921 = $(`<div id="html_1e1e6305c6548a486515f52893ba4921" style="width: 100.0%; height: 100.0%;"><b>Bengaluru</b><br>Risk Score: 4.12<br>Risk Category: Low<br>Predicted Tmax: 25.64 °C<br>Heatwave Probability: 0.00%</div>`)[0];
+                popup_b702a65ca47a4cffeb0df504c0bb57bb.setContent(html_1e1e6305c6548a486515f52893ba4921);
+            
+        
+
+        circle_marker_567a8dbeeb66c159c137bbc7fb0218f9.bindPopup(popup_b702a65ca47a4cffeb0df504c0bb57bb)
+        ;
+
+        
+    
+    
+            circle_marker_567a8dbeeb66c159c137bbc7fb0218f9.bindTooltip(
+                `<div>
+                     Bengaluru — Risk 4.12
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+</script>
+</html>

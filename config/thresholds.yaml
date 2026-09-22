@@ -1,0 +1,39 @@
+heatwave:
+  plains:
+    temperature_threshold_c: 40.0
+    departure_threshold_c: 4.5
+    severe_departure_threshold_c: 6.5
+
+  hilly:
+    temperature_threshold_c: 30.0
+    departure_threshold_c: 4.5
+    severe_departure_threshold_c: 6.5
+
+  coastal:
+    temperature_threshold_c: 37.0
+    departure_threshold_c: 4.5
+    severe_departure_threshold_c: 6.5
+
+risk_score:
+  temperature_weight: 0.40
+  heatwave_probability_weight: 0.25
+  anomaly_weight: 0.20
+  persistence_weight: 0.10
+  humidity_weight: 0.05
+
+risk_categories:
+  low:
+    min: 0
+    max: 19
+  moderate:
+    min: 20
+    max: 39
+  high:
+    min: 40
+    max: 59
+  very_high:
+    min: 60
+    max: 79
+  extreme:
+    min: 80
+    max: 100

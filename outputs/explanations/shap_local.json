@@ -1,0 +1,367 @@
+{
+  "BENG_01": {
+    "location_id": "BENG_01",
+    "date": "2024-12-30",
+    "base_value": 27.30510209262436,
+    "predicted_temperature": 25.64366666666665,
+    "features": [
+      {
+        "feature": "temp_max_lag_1",
+        "value": 26.9,
+        "shap_value": -1.7440944349829526,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "normal_max_temp",
+        "value": 26.12943548387097,
+        "shap_value": -0.8916283271925752,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "temp_max_rolling_7",
+        "value": 26.685714285714283,
+        "shap_value": 0.836624847671289,
+        "direction": "increases_prediction"
+      },
+      {
+        "feature": "temp_max_rolling_3",
+        "value": 26.166666666666647,
+        "shap_value": 0.8204720013153071,
+        "direction": "increases_prediction"
+      },
+      {
+        "feature": "departure",
+        "value": -0.4294354838709715,
+        "shap_value": -0.40565224527919636,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "day_of_year",
+        "value": 365.0,
+        "shap_value": -0.15975922975755752,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "temp_max_lag_3",
+        "value": 25.4,
+        "shap_value": -0.046167405565043104,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "temp_max_lag_2",
+        "value": 26.2,
+        "shap_value": -0.03578847408848939,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "temp_trend_3d",
+        "value": 1.5,
+        "shap_value": -0.025831676846442008,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "humidity_lag_1",
+        "value": 73.0,
+        "shap_value": -0.022111019813443038,
+        "direction": "decreases_prediction"
+      }
+    ],
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "latitude": 12.9716,
+    "longitude": 77.5946,
+    "region_type": "plains"
+  },
+  "DEL_01": {
+    "location_id": "DEL_01",
+    "date": "2024-12-30",
+    "base_value": 27.30510209262436,
+    "predicted_temperature": 18.402000000000022,
+    "features": [
+      {
+        "feature": "temp_max_rolling_3",
+        "value": 17.833333333333343,
+        "shap_value": -3.0569523108257592,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "temp_max_rolling_7",
+        "value": 19.0,
+        "shap_value": -2.8491531222119764,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "temp_max_lag_1",
+        "value": 18.3,
+        "shap_value": -1.3299953745070663,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "departure",
+        "value": -3.3475806451612904,
+        "shap_value": -1.1502380872202898,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "day_of_year",
+        "value": 365.0,
+        "shap_value": -0.28380793210080457,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "latitude",
+        "value": 28.6139,
+        "shap_value": -0.07768813481358224,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "humidity_lag_1",
+        "value": 86.0,
+        "shap_value": -0.046670766289901924,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "wind_lag_1",
+        "value": 9.6,
+        "shap_value": -0.04208573285504543,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "temp_max_lag_3",
+        "value": 17.1,
+        "shap_value": -0.03871449961490304,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "precip_3d",
+        "value": 34.50000000000003,
+        "shap_value": 0.026106821453704358,
+        "direction": "increases_prediction"
+      }
+    ],
+    "city": "Delhi",
+    "state": "Delhi",
+    "latitude": 28.6139,
+    "longitude": 77.209,
+    "region_type": "plains"
+  },
+  "MUM_01": {
+    "location_id": "MUM_01",
+    "date": "2024-12-30",
+    "base_value": 27.30510209262436,
+    "predicted_temperature": 31.1913333333333,
+    "features": [
+      {
+        "feature": "departure",
+        "value": 2.2342741935483907,
+        "shap_value": 1.3627318395238874,
+        "direction": "increases_prediction"
+      },
+      {
+        "feature": "temp_max_rolling_3",
+        "value": 29.50000000000001,
+        "shap_value": 1.25068965547666,
+        "direction": "increases_prediction"
+      },
+      {
+        "feature": "temp_max_rolling_7",
+        "value": 28.942857142857143,
+        "shap_value": 1.1012942048867347,
+        "direction": "increases_prediction"
+      },
+      {
+        "feature": "normal_max_temp",
+        "value": 30.36572580645161,
+        "shap_value": 0.3692692138975383,
+        "direction": "increases_prediction"
+      },
+      {
+        "feature": "day_of_year",
+        "value": 365.0,
+        "shap_value": -0.17987916219815867,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "temp_max_lag_1",
+        "value": 30.4,
+        "shap_value": 0.16882859697501554,
+        "direction": "increases_prediction"
+      },
+      {
+        "feature": "temp_min_lag_1",
+        "value": 22.2,
+        "shap_value": -0.054239095944772074,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "humidity_lag_1",
+        "value": 69.0,
+        "shap_value": -0.05255796496216727,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "wind_lag_1",
+        "value": 12.3,
+        "shap_value": -0.03162313192796002,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "temp_max_lag_2",
+        "value": 29.9,
+        "shap_value": -0.0219925623692785,
+        "direction": "decreases_prediction"
+      }
+    ],
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "latitude": 19.076,
+    "longitude": 72.8777,
+    "region_type": "coastal"
+  },
+  "PUNE_01": {
+    "location_id": "PUNE_01",
+    "date": "2024-12-30",
+    "base_value": 27.30510209262436,
+    "predicted_temperature": 30.348000000000035,
+    "features": [
+      {
+        "feature": "temp_max_rolling_3",
+        "value": 30.066666666666663,
+        "shap_value": 1.198151817513869,
+        "direction": "increases_prediction"
+      },
+      {
+        "feature": "temp_max_rolling_7",
+        "value": 29.47142857142857,
+        "shap_value": 1.1052061420521708,
+        "direction": "increases_prediction"
+      },
+      {
+        "feature": "departure",
+        "value": 2.032258064516128,
+        "shap_value": 1.0450801894945714,
+        "direction": "increases_prediction"
+      },
+      {
+        "feature": "temp_max_lag_1",
+        "value": 30.6,
+        "shap_value": 0.2623920742925515,
+        "direction": "increases_prediction"
+      },
+      {
+        "feature": "normal_max_temp",
+        "value": 28.66774193548387,
+        "shap_value": -0.24578613905138444,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "day_of_year",
+        "value": 365.0,
+        "shap_value": -0.1905092179570072,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "wind_lag_1",
+        "value": 7.6,
+        "shap_value": -0.03210525704435083,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "temp_max_lag_3",
+        "value": 29.9,
+        "shap_value": -0.025820988091109963,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "temp_trend_3d",
+        "value": 0.7000000000000028,
+        "shap_value": -0.02527784649135595,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "temp_max_lag_2",
+        "value": 29.7,
+        "shap_value": -0.01647796986689963,
+        "direction": "decreases_prediction"
+      }
+    ],
+    "city": "Pune",
+    "state": "Maharashtra",
+    "latitude": 18.5204,
+    "longitude": 73.8567,
+    "region_type": "plains"
+  },
+  "SHIM_01": {
+    "location_id": "SHIM_01",
+    "date": "2024-12-30",
+    "base_value": 27.30510209262436,
+    "predicted_temperature": 11.200999999999999,
+    "features": [
+      {
+        "feature": "temp_max_rolling_3",
+        "value": 8.900000000000015,
+        "shap_value": -5.867865265559909,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "temp_max_rolling_7",
+        "value": 7.814285714285715,
+        "shap_value": -5.418807536761507,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "temp_max_lag_1",
+        "value": 10.3,
+        "shap_value": -4.293833819004009,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "normal_max_temp",
+        "value": 10.741532258064517,
+        "shap_value": -1.1434600551449194,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "departure",
+        "value": 1.858467741935483,
+        "shap_value": 0.9395024621861554,
+        "direction": "increases_prediction"
+      },
+      {
+        "feature": "latitude",
+        "value": 31.1048,
+        "shap_value": -0.11062469862176172,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "precip_3d",
+        "value": 34.6,
+        "shap_value": -0.06496679470061047,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "temp_min_lag_1",
+        "value": -3.5,
+        "shap_value": -0.05901649586254661,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "temp_max_lag_3",
+        "value": 10.0,
+        "shap_value": -0.02731344635964567,
+        "direction": "decreases_prediction"
+      },
+      {
+        "feature": "day_of_year",
+        "value": 365.0,
+        "shap_value": -0.023852833834360047,
+        "direction": "decreases_prediction"
+      }
+    ],
+    "city": "Shimla",
+    "state": "Himachal Pradesh",
+    "latitude": 31.1048,
+    "longitude": 77.1734,
+    "region_type": "hilly"
+  }
+}
