@@ -1014,6 +1014,9 @@ function App() {
           <div
             role={pointError ? "alert" : "status"}
             style={{
+              position: "sticky",
+              top: "64px",
+              zIndex: 899,
               margin: "8px 16px 0",
               padding: "8px 12px",
               borderRadius: "8px",
