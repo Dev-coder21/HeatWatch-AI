@@ -1,341 +1,74 @@
+"""IMD heatwave criteria, shared by training labels and live inference.
+
+Per terrain (thresholds in config/thresholds.yaml):
+  * the station must reach the terrain's minimum Tmax (plains 40, coastal 37, hilly 30 C);
+  * then departure from normal >= 4.5 C is a heatwave, >= 6.5 C a severe heatwave.
+Plains also have IMD's absolute criterion, regardless of departure:
+  * Tmax >= 45 C is a heatwave, >= 47 C a severe heatwave.
+
+Severity codes: 0 = none, 1 = heatwave, 2 = severe heatwave.
+Rule codes: "none", "departure", "absolute" (absolute wins when both apply at the
+same severity or gives the higher severity).
+"""
+
+import numpy as np
 import pandas as pd
-import yaml
-from pathlib import Path
+
+from src.config import thresholds
+
+SEVERITY_NAMES = {0: "No Heatwave", 1: "Heatwave", 2: "Severe Heatwave"}
 
 
-# -----------------------------------
-# Configuration
-# -----------------------------------
+def classify(tmax, normal, terrain):
+    """Vectorised IMD classification.
 
-INPUT_FILE = Path("data/processed/weather_clean.csv")
-OUTPUT_FILE = Path("data/processed/weather_labeled.csv")
-THRESHOLDS_FILE = Path("config/thresholds.yaml")
+    tmax, normal: array-like deg C; terrain: scalar or array of hilly/coastal/plains.
+    Returns a DataFrame with departure, severity (0/1/2), heatwave (0/1) and rule.
+    """
+    tmax = np.asarray(tmax, dtype=float)
+    normal = np.asarray(normal, dtype=float)
+    terrain = np.broadcast_to(np.asarray(terrain, dtype=object), tmax.shape)
+    departure = tmax - normal
+    rules = thresholds()["heatwave"]
 
-# Training period used to calculate
-# climatological normal temperatures.
-TRAINING_END_DATE = "2022-12-31"
+    severity_dep = np.zeros(tmax.shape, dtype=int)
+    severity_abs = np.zeros(tmax.shape, dtype=int)
 
+    for name, cfg in rules.items():
+        mask = terrain == name
+        hot_enough = mask & (tmax >= cfg["temperature_threshold_c"])
+        severity_dep[hot_enough & (departure >= cfg["departure_threshold_c"])] = 1
+        severity_dep[hot_enough & (departure >= cfg["severe_departure_threshold_c"])] = 2
+        if "absolute_heatwave_c" in cfg:
+            severity_abs[mask & (tmax >= cfg["absolute_heatwave_c"])] = 1
+            severity_abs[mask & (tmax >= cfg["absolute_severe_c"])] = 2
 
-# -----------------------------------
-# Load thresholds
-# -----------------------------------
+    # NaNs never label.
+    invalid = ~np.isfinite(tmax) | ~np.isfinite(normal)
+    severity_dep[invalid] = 0
+    severity_abs[invalid] = 0
 
-def load_thresholds():
-
-    with open(THRESHOLDS_FILE, "r") as file:
-        thresholds = yaml.safe_load(file)
-
-    return thresholds["heatwave"]
-
-
-# -----------------------------------
-# Calculate monthly normal temperature
-# -----------------------------------
-
-def calculate_monthly_normals(df):
-
-    training_data = df[
-        df["date"] <= TRAINING_END_DATE
-    ].copy()
-
-    training_data["month"] = (
-        training_data["date"].dt.month
+    severity = np.maximum(severity_dep, severity_abs)
+    rule = np.where(
+        severity == 0,
+        "none",
+        np.where(severity_abs >= severity_dep, "absolute", "departure"),
     )
-
-    monthly_normals = (
-        training_data
-        .groupby(
-            ["location_id", "month"]
-        )["temperature_max"]
-        .mean()
-        .reset_index()
-    )
-
-    monthly_normals = monthly_normals.rename(
-        columns={
-            "temperature_max": "normal_max_temp"
+    return pd.DataFrame(
+        {
+            "departure": departure,
+            "severity": severity,
+            "heatwave": (severity > 0).astype(int),
+            "rule": rule,
         }
     )
 
-    return monthly_normals
 
-
-# -----------------------------------
-# Apply heatwave rules
-# -----------------------------------
-
-def apply_heatwave_rules(df, thresholds):
-
-    # Add month
-    df["month"] = df["date"].dt.month
-
-    # Calculate monthly normal
-    monthly_normals = calculate_monthly_normals(df)
-
-    # Merge normal temperature
-    df = df.merge(
-        monthly_normals,
-        on=["location_id", "month"],
-        how="left"
-    )
-
-    # Calculate departure from normal
-    df["departure"] = (
-        df["temperature_max"]
-        - df["normal_max_temp"]
-    )
-
-    # Default values
-    df["heatwave"] = 0
-    df["severity"] = "No Heatwave"
-
-    # -----------------------------------
-    # Plains
-    # -----------------------------------
-
-    plains = df["region_type"] == "plains"
-
-    plains_condition = (
-        plains
-        & (
-            df["temperature_max"]
-            >= thresholds["plains"][
-                "temperature_threshold_c"
-            ]
-        )
-        & (
-            df["departure"]
-            >= thresholds["plains"][
-                "departure_threshold_c"
-            ]
-        )
-    )
-
-    df.loc[
-        plains_condition,
-        "heatwave"
-    ] = 1
-
-    df.loc[
-        plains_condition,
-        "severity"
-    ] = "Heatwave"
-
-    plains_severe = (
-        plains_condition
-        & (
-            df["departure"]
-            >= thresholds["plains"][
-                "severe_departure_threshold_c"
-            ]
-        )
-    )
-
-    df.loc[
-        plains_severe,
-        "severity"
-    ] = "Severe Heatwave"
-
-    # -----------------------------------
-    # Hilly
-    # -----------------------------------
-
-    hilly = df["region_type"] == "hilly"
-
-    hilly_condition = (
-        hilly
-        & (
-            df["temperature_max"]
-            >= thresholds["hilly"][
-                "temperature_threshold_c"
-            ]
-        )
-        & (
-            df["departure"]
-            >= thresholds["hilly"][
-                "departure_threshold_c"
-            ]
-        )
-    )
-
-    df.loc[
-        hilly_condition,
-        "heatwave"
-    ] = 1
-
-    df.loc[
-        hilly_condition,
-        "severity"
-    ] = "Heatwave"
-
-    hilly_severe = (
-        hilly_condition
-        & (
-            df["departure"]
-            >= thresholds["hilly"][
-                "severe_departure_threshold_c"
-            ]
-        )
-    )
-
-    df.loc[
-        hilly_severe,
-        "severity"
-    ] = "Severe Heatwave"
-
-    # -----------------------------------
-    # Coastal
-    # -----------------------------------
-
-    coastal = df["region_type"] == "coastal"
-
-    coastal_condition = (
-        coastal
-        & (
-            df["temperature_max"]
-            >= thresholds["coastal"][
-                "temperature_threshold_c"
-            ]
-        )
-        & (
-            df["departure"]
-            >= thresholds["coastal"][
-                "departure_threshold_c"
-            ]
-        )
-    )
-
-    df.loc[
-        coastal_condition,
-        "heatwave"
-    ] = 1
-
-    df.loc[
-        coastal_condition,
-        "severity"
-    ] = "Heatwave"
-
-    coastal_severe = (
-        coastal_condition
-        & (
-            df["departure"]
-            >= thresholds["coastal"][
-                "severe_departure_threshold_c"
-            ]
-        )
-    )
-
-    df.loc[
-        coastal_severe,
-        "severity"
-    ] = "Severe Heatwave"
-
-    return df
-
-
-# -----------------------------------
-# Consecutive heatwave days
-# -----------------------------------
-
-def calculate_persistence(df):
-
-    df = df.sort_values(
-        ["location_id", "date"]
-    ).reset_index(drop=True)
-
-    df["heatwave_group"] = (
-        df.groupby("location_id")["heatwave"]
-        .transform(
-            lambda x: x.ne(1).cumsum()
-        )
-    )
-
-    df["consecutive_heatwave_days"] = (
-        df.groupby(
-            ["location_id", "heatwave_group"]
-        )["heatwave"]
-        .transform("sum")
-    )
-
-    df.loc[
-        df["heatwave"] == 0,
-        "consecutive_heatwave_days"
-    ] = 0
-
-    df = df.drop(
-        columns=["heatwave_group"]
-    )
-
-    return df
-
-
-# -----------------------------------
-# Main
-# -----------------------------------
-
-def main():
-
-    print("Loading cleaned weather data...")
-
-    df = pd.read_csv(INPUT_FILE)
-
-    df["date"] = pd.to_datetime(
-        df["date"]
-    )
-
-    print(
-        f"Loaded {len(df)} records."
-    )
-
-    thresholds = load_thresholds()
-
-    df = apply_heatwave_rules(
-        df,
-        thresholds
-    )
-
-    df = calculate_persistence(df)
-
-    # Save labeled dataset
-    df.to_csv(
-        OUTPUT_FILE,
-        index=False
-    )
-
-    # -----------------------------------
-    # Summary
-    # -----------------------------------
-
-    heatwave_days = (
-        df["heatwave"].sum()
-    )
-
-    severe_days = (
-        (df["severity"] == "Severe Heatwave")
-        .sum()
-    )
-
-    print()
-    print("Heatwave labeling complete.")
-    print(
-        f"Total records: {len(df)}"
-    )
-    print(
-        f"Heatwave records: {heatwave_days}"
-    )
-    print(
-        f"Severe heatwave records: {severe_days}"
-    )
-    print()
-    print("Severity distribution:")
-    print(
-        df["severity"].value_counts()
-    )
-    print()
-    print(
-        f"Saved to: {OUTPUT_FILE}"
-    )
-
-
-if __name__ == "__main__":
-    main()
+def consecutive_days(heatwave):
+    """Running count of consecutive heatwave days ending on each day (0 on non-heatwave days)."""
+    count = 0
+    out = []
+    for value in heatwave:
+        count = count + 1 if value else 0
+        out.append(count)
+    return np.array(out, dtype=int)

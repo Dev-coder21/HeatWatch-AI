@@ -17,6 +17,14 @@ api:
   forecast_model: gfs_seamless
   baseline_models: [ecmwf_ifs025]
 
+lapse:
+  # Temperature change with height used to move gridded values to a point's real elevation.
+  rate_c_per_km: 6.5
+  # Open-Meteo already corrects its output to the requested point's DEM elevation at this
+  # rate (verified: elevation=0 vs 3000 m differ by 19.5 C). Kept separate so a different
+  # rate above is applied as a delta on top of Open-Meteo data.
+  openmeteo_rate_c_per_km: 6.5
+
 terrain:
   hilly_min_elevation_m: 1000
   coastal_max_distance_km: 50

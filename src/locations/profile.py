@@ -86,7 +86,7 @@ def get_profile(lat, lon, store=None):
     # Elevation is taken at the cell centre so every point in the cell shares a profile.
     elevation = fetch_elevation(cell_lat, cell_lon)
     coast_km = distance_to_coast_km(cell_lat, cell_lon)
-    normal = normal_coefficients(cell_lat, cell_lon)
+    normal = normal_coefficients(cell_lat, cell_lon, point_elevation_m=elevation)
     profile = {
         "grid_key": key,
         "lat": cell_lat,
@@ -99,6 +99,7 @@ def get_profile(lat, lon, store=None):
             "lat": normal["cell_lat"],
             "lon": normal["cell_lon"],
             "distance_km": normal["cell_distance_km"],
+            "elevation_m": normal["cell_elevation_m"],
         },
         "place": reverse(cell_lat, cell_lon),
     }

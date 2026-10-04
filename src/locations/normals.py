@@ -11,6 +11,7 @@ import numpy as np
 
 from src.config import project_path, settings
 from src.locations.geo import haversine_km
+from src.locations.lapse import cell_to_point
 
 OMEGA = 2 * np.pi / 365.25
 
@@ -51,6 +52,7 @@ def _grid():
         "lat": data["lat"].astype(float),
         "lon": data["lon"].astype(float),
         "coefs": data["coefs"].astype(float),
+        "elevation": data["elevation"].astype(float) if "elevation" in data else None,
         "source": str(data["source"]) if "source" in data else "",
     }
 
@@ -71,19 +73,27 @@ def nearest_cell(lat, lon):
     return int(candidates[best]), distance
 
 
-def normal_coefficients(lat, lon):
+def normal_coefficients(lat, lon, point_elevation_m=None):
+    """Harmonic coefficients for the nearest cell, lapse-corrected to the point's elevation.
+
+    A height correction is a constant shift, so only the mean term a0 changes.
+    """
     index, distance = nearest_cell(lat, lon)
     grid = _grid()
+    cell_elevation = float(grid["elevation"][index]) if grid["elevation"] is not None else None
+    coefs = grid["coefs"][index].copy()
+    coefs[0] = cell_to_point(coefs[0], point_elevation_m, cell_elevation)
     return {
-        "coefs": grid["coefs"][index].tolist(),
+        "coefs": coefs.tolist(),
+        "cell_elevation_m": cell_elevation,
         "cell_lat": float(grid["lat"][index]),
         "cell_lon": float(grid["lon"][index]),
         "cell_distance_km": round(distance, 2),
     }
 
 
-def normals(lat, lon, doy=None):
+def normals(lat, lon, doy=None, point_elevation_m=None):
     """Daily normal Tmax (deg C) for the given day(s) of year; all 366 days by default."""
-    coefs = normal_coefficients(lat, lon)["coefs"]
+    coefs = normal_coefficients(lat, lon, point_elevation_m)["coefs"]
     doy = np.arange(1, 367) if doy is None else doy
     return evaluate(coefs, doy)

@@ -1,0 +1,9 @@
+event,site_id,start,end,reported_station_tmax_c,reported_date,note
+Churu May 2024,churu,2024-05-24,2024-06-01,50.5,2024-05-28,press-reported IMD station max; approximate
+Phalodi May 2024,phalodi,2024-05-24,2024-06-01,50.0,2024-05-25,press-reported IMD station max; approximate
+Delhi May 2024,delhi,2024-05-24,2024-06-01,46.8,2024-05-29,Safdarjung (press-reported); Mungeshpur 52.9 was ruled a sensor error
+Banda June 2019,banda,2019-05-28,2019-06-12,49.2,2019-06-10,press-reported; approximate; before 2021 so only ERA5-Land audited via grid
+Banda May 2024,banda,2024-05-14,2024-06-01,49.0,2024-05-29,press-reported; approximate
+Titlagarh April 2022,titlagarh,2022-04-10,2022-04-30,45.5,2022-04-25,press-reported; approximate
+Titlagarh April 2023,titlagarh,2023-04-10,2023-04-30,44.5,2023-04-18,press-reported; approximate
+Palakkad Apr-May 2024,palakkad,2024-04-20,2024-05-10,41.8,2024-04-29,press-reported; approximate

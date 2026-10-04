@@ -17,6 +17,7 @@ Requires ~/.cdsapirc (see README) and the dataset licence accepted on the CDS si
 
 import argparse
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -28,44 +29,77 @@ DATASET = "derived-era5-land-daily-statistics"
 # North, West, South, East: India plus the Andaman & Nicobar and Lakshadweep islands.
 AREA = [38, 66, 5, 98.5]
 RAW_DIR = project_path("data/external/era5land_tmax")
+OROGRAPHY_FILE = project_path("data/external/era5land_geopotential.nc")
 
 
 def month_file(year, month):
     return RAW_DIR / f"tmax_{year}_{month:02d}.nc"
 
 
-def download(years):
+def _download_month(client, year, month):
+    target = month_file(year, month)
+    if target.exists() and target.stat().st_size > 0:
+        return
+    request = {
+        "variable": ["2m_temperature"],
+        "year": str(year),
+        "month": f"{month:02d}",
+        "day": [f"{d:02d}" for d in range(1, 32)],
+        "daily_statistic": "daily_maximum",
+        "time_zone": "utc+05:00",
+        "frequency": "1_hourly",
+        "area": AREA,
+    }
+    for attempt in range(4):
+        try:
+            partial = target.with_suffix(".part")
+            client.retrieve(DATASET, request, str(partial))
+            partial.rename(target)
+            print(f"Downloaded {year}-{month:02d}", flush=True)
+            return
+        except Exception as error:  # CDS raises plain Exceptions
+            print(f"  {year}-{month:02d} failed ({error}); retrying", flush=True)
+            time.sleep(30 * (attempt + 1))
+    raise RuntimeError(f"Could not download {year}-{month:02d}")
+
+
+def download_orography():
+    """ERA5-Land model surface height, needed for the lapse-rate correction."""
+    if OROGRAPHY_FILE.exists():
+        return
+    import cdsapi
+
+    cdsapi.Client().retrieve(
+        "reanalysis-era5-land",
+        {
+            "variable": ["geopotential"],
+            "year": "2024", "month": "01", "day": ["01"], "time": ["00:00"],
+            "data_format": "netcdf", "download_format": "unarchived",
+            "area": AREA,
+        },
+        str(OROGRAPHY_FILE),
+    )
+
+
+def download(years, workers=4):
     import cdsapi
 
     RAW_DIR.mkdir(parents=True, exist_ok=True)
-    client = cdsapi.Client()
-    for year in years:
-        for month in range(1, 13):
-            target = month_file(year, month)
-            if target.exists() and target.stat().st_size > 0:
-                continue
-            request = {
-                "variable": ["2m_temperature"],
-                "year": str(year),
-                "month": f"{month:02d}",
-                "day": [f"{d:02d}" for d in range(1, 32)],
-                "daily_statistic": "daily_maximum",
-                "time_zone": "utc+05:00",
-                "frequency": "1_hourly",
-                "area": AREA,
-            }
-            for attempt in range(4):
-                try:
-                    print(f"Requesting {year}-{month:02d} ...", flush=True)
-                    partial = target.with_suffix(".part")
-                    client.retrieve(DATASET, request, str(partial))
-                    partial.rename(target)
-                    break
-                except Exception as error:  # CDS raises plain Exceptions
-                    print(f"  failed ({error}); retrying", flush=True)
-                    time.sleep(30 * (attempt + 1))
-            else:
-                raise RuntimeError(f"Could not download {year}-{month:02d}")
+    download_orography()
+    client = cdsapi.Client(quiet=True)
+    jobs = [(year, month) for year in years for month in range(1, 13)]
+    # CDS queues a few concurrent requests per user; more just wait in line.
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        for future in [pool.submit(_download_month, client, y, m) for y, m in jobs]:
+            future.result()
+
+
+def _cell_elevation(lat, lon):
+    import xarray as xr
+
+    z = xr.open_dataset(OROGRAPHY_FILE)["z"].squeeze() / 9.80665
+    z = z.sel(latitude=xr.DataArray(lat), longitude=xr.DataArray(lon), method="nearest")
+    return z.values
 
 
 def _open_month(path):
@@ -115,13 +149,17 @@ def fit(years, harmonics):
     coefs = np.linalg.solve(xtx, xty[:, land]).T
 
     lat_grid, lon_grid = np.meshgrid(lat, lon, indexing="ij")
+    cell_lat = lat_grid.ravel()[land]
+    cell_lon = lon_grid.ravel()[land]
     out = project_path(settings()["normals"]["grid_file"])
     out.parent.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(
         out,
-        lat=lat_grid.ravel()[land].astype(np.float32),
-        lon=lon_grid.ravel()[land].astype(np.float32),
+        lat=cell_lat.astype(np.float32),
+        lon=cell_lon.astype(np.float32),
         coefs=coefs.astype(np.float32),
+        # Model surface height of each cell: normals are valid at this height.
+        elevation=_cell_elevation(cell_lat, cell_lon).astype(np.float32),
         source=np.array(
             f"ERA5-Land daily max 2m temperature {years[0]}-{years[-1]}, "
             f"{harmonics}-harmonic fit, day boundary UTC+05:00 (CDS {DATASET})"
