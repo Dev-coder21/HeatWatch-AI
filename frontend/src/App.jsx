@@ -33,12 +33,111 @@ import {
   Popup,
   TileLayer,
   useMap,
+  useMapEvents,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "./App.css";
 
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+
+
+/* ------------------------------------------------------------
+   Adapters: v2 API (docs/API.md) -> the field names this UI uses
+   ------------------------------------------------------------ */
+
+async function getJson(path) {
+  const response = await fetch(`${API_BASE}${path}`);
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const detail = typeof body.detail === "string" ? body.detail : `Request failed (${response.status})`;
+    throw new Error(detail);
+  }
+  return body;
+}
+
+function featuredToLocation(place) {
+  return {
+    location_id: place.slug,
+    city: place.name,
+    state: place.state,
+    latitude: place.lat,
+    longitude: place.lon,
+    region_type: place.terrain_type,
+    forecast_date: place.forecast_date,
+    predicted_tmax: place.predicted_tmax,
+    heatwave_probability: place.heatwave_probability,
+    severity: place.severity,
+    risk_score: place.risk_score,
+    risk_category: place.risk_category,
+    featured: true,
+  };
+}
+
+function riskToLocation(risk, base) {
+  const p = risk.prediction;
+  const c = p.risk_components;
+  const advisory = risk.advisory;
+  return {
+    location_id: base?.location_id || `point-${risk.location.grid_key}`,
+    city: base?.city || risk.location.name,
+    state: risk.location.state,
+    latitude: base?.latitude ?? risk.location.query_lat,
+    longitude: base?.longitude ?? risk.location.query_lon,
+    region_type: risk.location.terrain_type,
+    elevation_m: risk.location.elevation_m,
+    forecast_date: risk.forecast_date,
+    predicted_tmax: p.predicted_tmax,
+    raw_forecast_tmax: p.raw_forecast_tmax,
+    normal_max_temp: p.normal_tmax,
+    departure: p.departure,
+    heatwave_probability: p.heatwave_probability,
+    severity: p.severity,
+    humidity: p.humidity,
+    consecutive_heatwave_days: p.consecutive_heatwave_days,
+    risk_score: p.risk_score,
+    risk_category: p.risk_category,
+    temperature_component: c.temperature,
+    heatwave_probability_component: c.heatwave_probability,
+    anomaly_component: c.anomaly,
+    persistence_component: c.persistence,
+    humidity_component: c.humidity,
+    top_factor_1: p.top_factors[0],
+    top_factor_2: p.top_factors[1],
+    top_factor_3: p.top_factors[2],
+    advisory: [advisory.general, ...advisory.context].join(" "),
+    advisory_audiences: advisory.audiences,
+    outlook: risk.outlook,
+    stale: risk.data.stale,
+    featured: Boolean(base?.featured),
+  };
+}
+
+function explainToLegacy(explain, location) {
+  const block = explain.predicted_tmax;
+  return {
+    location_id: location?.location_id,
+    city: location?.city || explain.location.name,
+    date: explain.forecast_date,
+    base_value: block.base_value,
+    predicted_temperature: block.prediction,
+    features: block.contributions.map((item) => ({
+      feature: item.label,
+      value: item.value,
+      shap_value: item.shap,
+    })),
+  };
+}
+
+
+function MapClickHandler({ onPick }) {
+  useMapEvents({
+    click(event) {
+      onPick(event.latlng.lat, event.latlng.lng);
+    },
+  });
+  return null;
+}
 
 
 function MapViewController({ locations }) {
@@ -227,6 +326,11 @@ function App() {
     useState(false);
 
   const [error, setError] = useState("");
+  const [pointError, setPointError] = useState("");
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [details, setDetails] = useState({});
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
 
@@ -234,47 +338,78 @@ function App() {
      LOAD PREDICTIONS
      ========================================================== */
 
+  // Load one point's full assessment; `base` is the featured entry, if any.
+  async function selectPoint(lat, lon, base) {
+    try {
+      setPointError("");
+      setDetailLoading(true);
+      const risk = await getJson(`/api/risk?lat=${lat}&lon=${lon}`);
+      const detail = riskToLocation(risk, base);
+      setSelectedLocation(detail);
+      setDetails((prev) => ({ ...prev, [detail.location_id]: detail }));
+    } catch (err) {
+      setPointError(err.message);
+    } finally {
+      setDetailLoading(false);
+    }
+  }
+
+  async function pickOnMap(lat, lon) {
+    try {
+      setPointError("");
+      const place = await getJson(`/api/reverse?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}`);
+      await selectPoint(place.lat, place.lon, {
+        city: place.label,
+        latitude: place.lat,
+        longitude: place.lon,
+      });
+    } catch (err) {
+      setPointError(err.message);
+    }
+  }
+
   useEffect(() => {
-    async function loadPredictions() {
+    async function loadFeatured() {
       try {
         setLoading(true);
         setError("");
-
-        const response = await fetch(
-          `${API_BASE}/api/predictions`
-        );
-
-        if (!response.ok) {
-          throw new Error(
-            "Unable to load prediction data."
-          );
-        }
-
-        const data = await response.json();
-
-        const predictionRows =
-          data.predictions || [];
-
-        setLocations(predictionRows);
-
-        if (predictionRows.length > 0) {
-          setSelectedLocation(
-            predictionRows[0]
-          );
+        const data = await getJson("/api/featured");
+        const rows = data.places
+          .filter((place) => !place.error)
+          .map(featuredToLocation);
+        setLocations(rows);
+        if (rows.length > 0) {
+          // Show the headline numbers at once; the full assessment replaces them.
+          setSelectedLocation(rows[0]);
+          selectPoint(rows[0].latitude, rows[0].longitude, rows[0]);
         }
       } catch (err) {
         console.error(err);
-
-        setError(
-          "Unable to connect to the HeatWatch AI backend."
-        );
+        setError("Unable to connect to the HeatWatch AI backend.");
       } finally {
         setLoading(false);
       }
     }
 
-    loadPredictions();
+    loadFeatured();
   }, []);
+
+
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (searchQuery.trim().length < 2) {
+        setSearchResults([]);
+        return;
+      }
+      try {
+        const data = await getJson(`/api/search?q=${encodeURIComponent(searchQuery.trim())}`);
+        setSearchResults(data.results);
+      } catch {
+        setSearchResults([]);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
 
   /* ==========================================================
@@ -283,27 +418,17 @@ function App() {
 
   useEffect(() => {
     async function loadExplanation() {
-      if (!selectedLocation?.location_id) {
+      if (!selectedLocation) {
         setExplanationData(null);
         return;
       }
 
       try {
         setExplanationLoading(true);
-
-        const response = await fetch(
-          `${API_BASE}/api/explanations/${selectedLocation.location_id}`
+        const data = await getJson(
+          `/api/explain?lat=${selectedLocation.latitude}&lon=${selectedLocation.longitude}`
         );
-
-        if (!response.ok) {
-          throw new Error(
-            "Unable to load SHAP explanation."
-          );
-        }
-
-        const data = await response.json();
-
-        setExplanationData(data);
+        setExplanationData(explainToLegacy(data, selectedLocation));
       } catch (err) {
         console.error(err);
         setExplanationData(null);
@@ -362,8 +487,18 @@ function App() {
     );
   }, [locations]);
 
-  const priorityLocation =
-    rankedLocations[0] || selectedLocation || null;
+  const priorityLocation = rankedLocations[0]
+    ? { ...rankedLocations[0], ...(details[rankedLocations[0].location_id] || {}) }
+    : selectedLocation || null;
+
+  // Full assessment for the priority place (departure, persistence) in the background.
+  useEffect(() => {
+    const top = rankedLocations[0];
+    if (!top || details[top.location_id]) return;
+    getJson(`/api/risk?lat=${top.latitude}&lon=${top.longitude}`)
+      .then((risk) => setDetails((prev) => ({ ...prev, [top.location_id]: riskToLocation(risk, top) })))
+      .catch(() => {});
+  }, [rankedLocations, details]);
 
 
   /* ==========================================================
@@ -694,7 +829,7 @@ function App() {
               </div>
 
               <div className="sidebar-model-value">
-                Random Forest
+                Gradient Boosting
               </div>
 
             </div>
@@ -780,6 +915,75 @@ function App() {
 
           <div className="topbar-right">
 
+            <div style={{ position: "relative" }}>
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Search any place in India"
+                aria-label="Search place"
+                style={{
+                  padding: "7px 10px",
+                  borderRadius: "8px",
+                  border: "1px solid rgba(255,255,255,0.15)",
+                  background: "rgba(255,255,255,0.06)",
+                  color: "inherit",
+                  minWidth: "220px",
+                }}
+              />
+              {searchResults.length > 0 && (
+                <ul
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    left: 0,
+                    right: 0,
+                    zIndex: 1000,
+                    margin: "4px 0 0",
+                    padding: 0,
+                    listStyle: "none",
+                    background: "#111a16",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                    borderRadius: "8px",
+                    maxHeight: "260px",
+                    overflowY: "auto",
+                  }}
+                >
+                  {searchResults.map((place) => (
+                    <li key={`${place.name}-${place.lat}-${place.lon}`}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSearchQuery("");
+                          setSearchResults([]);
+                          selectPoint(place.lat, place.lon, {
+                            city: place.name,
+                            latitude: place.lat,
+                            longitude: place.lon,
+                          });
+                        }}
+                        style={{
+                          display: "block",
+                          width: "100%",
+                          textAlign: "left",
+                          padding: "8px 10px",
+                          background: "none",
+                          border: "none",
+                          color: "inherit",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {place.name}
+                        <span style={{ opacity: 0.6 }}>
+                          {" "}· {[place.district, place.state].filter(Boolean).join(", ")}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
             <div className="live-status">
 
               <span className="live-dot" />
@@ -805,6 +1009,21 @@ function App() {
           </div>
 
         </header>
+
+        {(pointError || detailLoading) && (
+          <div
+            role={pointError ? "alert" : "status"}
+            style={{
+              margin: "8px 16px 0",
+              padding: "8px 12px",
+              borderRadius: "8px",
+              background: pointError ? "rgba(220,38,38,0.15)" : "rgba(255,255,255,0.06)",
+              color: pointError ? "#fca5a5" : "inherit",
+            }}
+          >
+            {pointError || "Loading assessment…"}
+          </div>
+        )}
 
 
         {error && (
@@ -1225,7 +1444,9 @@ function App() {
                             : ""
                         }`}
                         onClick={() =>
-                          setSelectedLocation(
+                          selectPoint(
+                            location.latitude,
+                            location.longitude,
                             location
                           )
                         }
@@ -1438,6 +1659,21 @@ function App() {
                 locations={locations}
               />
 
+              <MapClickHandler onPick={pickOnMap} />
+
+              {selectedLocation && !selectedLocation.featured && (
+                <CircleMarker
+                  center={[
+                    Number(selectedLocation.latitude),
+                    Number(selectedLocation.longitude),
+                  ]}
+                  radius={9}
+                  pathOptions={{ color: "#ffffff", weight: 2, fillOpacity: 0.6 }}
+                >
+                  <Popup>{selectedLocation.city}</Popup>
+                </CircleMarker>
+              )}
+
 
               {locations.map(
                 (location) => {
@@ -1474,6 +1710,7 @@ function App() {
                       key={
                         location.location_id
                       }
+                      bubblingMouseEvents={false}
                       center={[
                         latitude,
                         longitude,
@@ -1490,10 +1727,13 @@ function App() {
                         )}`,
                       }}
                       eventHandlers={{
-                        click: () =>
-                          setSelectedLocation(
+                        click: () => {
+                          selectPoint(
+                            location.latitude,
+                            location.longitude,
                             location
-                          ),
+                          );
+                        },
                       }}
                     >
 
@@ -1623,7 +1863,9 @@ function App() {
                     location.location_id
                   }
                   onClick={() =>
-                    setSelectedLocation(
+                    selectPoint(
+                      location.latitude,
+                      location.longitude,
                       location
                     )
                   }
@@ -2448,7 +2690,7 @@ function App() {
 
               <p>
                 Understand which input features
-                influenced the Random Forest's
+                influenced the gradient-boosting
                 next-day temperature prediction.
               </p>
 
@@ -2910,7 +3152,7 @@ function App() {
 
                     <p>
                       SHAP explains the behavior of
-                      the Random Forest temperature
+                      the gradient-boosting temperature
                       model. These contributions
                       describe model behavior and
                       should not be interpreted as

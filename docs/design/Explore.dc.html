@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HeatWatch home</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0;background:#0D0A08;color:#F4EEE7;font-family:'IBM Plex Sans',system-ui,sans-serif}
+a{color:#F7A866}a:hover{color:#FFC48F}
+.disp{font-family:'Bricolage Grotesque','IBM Plex Sans',sans-serif}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+a:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid #F7A866;outline-offset:2px}
+@keyframes hwpulse{0%{transform:scale(1);opacity:.7}100%{transform:scale(2.6);opacity:0}}
+.pulse{animation:hwpulse 2.2s ease-out infinite}
+@media (prefers-reduced-motion: reduce){.pulse{animation:none}}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #0D0A08; color: #F4EEE7; font-family: 'IBM Plex Sans', system-ui, sans-serif">
+<div style="max-width: 1320px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 48px) 48px; box-sizing: border-box">
+
+<header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 22px 0; border-bottom: 1px solid #2A221D">
+<a href="Explore.dc.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #F4EEE7">
+<svg width="30" height="30" viewBox="0 0 30 30" fill="none" stroke="{{accent}}" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="15" cy="15" r="6"></circle><path d="M15 2v4M15 24v4M2 15h4M24 15h4M5.8 5.8l2.8 2.8M21.4 21.4l2.8 2.8M5.8 24.2l2.8-2.8M21.4 8.6l2.8-2.8"></path></svg>
+<span class="disp" style="font-size: 22px; font-weight: 800; letter-spacing: -0.02em">HeatWatch</span>
+<span class="mono" style="font-size: 11px; color: #A89C91; letter-spacing: 0.08em">AI · INDIA</span>
+</a>
+<div class="mono" style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #A89C91"><span style="width: 8px; height: 8px; border-radius: 50%; background: #4FB59A"></span>LIVE · ISSUED SUN 4 OCT 2026</div>
+</header>
+
+<section style="padding: 64px 0 40px; display: flex; flex-direction: column; gap: 24px; max-width: 900px">
+<h1 class="disp" style="margin: 0; font-size: clamp(46px, 7vw, 92px); line-height: 0.92; font-weight: 800; letter-spacing: -0.04em">How hot will your town be <span style="color: {{accent}}">tomorrow?</span></h1>
+<p style="margin: 0; font-size: 18px; line-height: 1.55; color: #D9CFC5; max-width: 640px">Search any place in India, or click anywhere on the map, for a 7-day heat-risk outlook checked against IMD's heatwave rules.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 10px; max-width: 720px">
+<label for="hero-search" class="sr">Search a place in India</label>
+<div style="flex: 1 1 320px; display: flex; align-items: center; gap: 12px; height: 60px; padding: 0 20px; background: #17120F; border: 1px solid #4A3D35; border-radius: 16px">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A89C91" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+<input id="hero-search" type="search" placeholder="Try Jodhpur, Nagpur, Kochi…" style="flex: 1; min-width: 0; height: 56px; background: transparent; border: 0; color: #F4EEE7; font-size: 17px">
+</div>
+<a href="Main.dc.html" style="display: inline-flex; align-items: center; justify-content: center; min-height: 60px; padding: 0 26px; border-radius: 16px; background: {{accent}}; color: #170C06; font-weight: 600; font-size: 16px; text-decoration: none">Check heat risk</a>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+<span class="mono" style="font-size: 11px; color: #8A7E74; letter-spacing: 0.08em; margin-right: 4px">QUICK PICKS</span>
+<a href="Main.dc.html" style="font-size: 13px; padding: 8px 14px; border-radius: 999px; border: 1px solid #3A302A; color: #F4EEE7; text-decoration: none">Mumbai</a>
+<span style="font-size: 13px; padding: 8px 14px; border-radius: 999px; border: 1px solid #3A302A; color: #D9CFC5">Delhi</span>
+<span style="font-size: 13px; padding: 8px 14px; border-radius: 999px; border: 1px solid #3A302A; color: #D9CFC5">Jaisalmer</span>
+<span style="font-size: 13px; padding: 8px 14px; border-radius: 999px; border: 1px solid #3A302A; color: #D9CFC5">Chennai</span>
+<span style="font-size: 13px; padding: 8px 14px; border-radius: 999px; border: 1px solid #3A302A; color: #D9CFC5">Shimla</span>
+</div>
+</section>
+
+<section style="display: flex; flex-wrap: wrap; gap: 20px">
+<div style="flex: 999 1 640px; min-width: 0; background: #16110E; border: 1px solid #2A221D; border-radius: 24px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: flex-end">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h2 class="disp" style="margin: 0; font-size: 24px; font-weight: 600">Tomorrow across India</h2>
+<p style="margin: 0; font-size: 14px; color: #A89C91">Predicted maximum temperature at featured places. Click anywhere to check that spot.</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: #D9CFC5">
+<span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 50%; background: #7EA6C4"></span>below 30°</span>
+<span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 50%; background: #D9B26A"></span>30–33°</span>
+<span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 50%; background: #EE9A4A"></span>33–35°</span>
+<span style="display: inline-flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 50%; background: #E5512B"></span>35° and up</span>
+</div>
+</div>
+<div style="overflow-x: auto">
+<div style="position: relative; width: 620px; height: 660px; margin: 0 auto; background: #120E0B; border-radius: 16px">
+<sc-for list="{{latLines}}" as="g" hint-placeholder-count="6">
+<div style="{{g.line}}"></div>
+<span class="mono" style="{{g.lab}}">{{g.text}}</span>
+</sc-for>
+<sc-for list="{{lonLines}}" as="g" hint-placeholder-count="6">
+<div style="{{g.line}}"></div>
+<span class="mono" style="{{g.lab}}">{{g.text}}</span>
+</sc-for>
+<div class="pulse" style="position: absolute; left: 109px; top: 369px; width: 28px; height: 28px; border-radius: 50%; border: 2px solid #E5512B; box-sizing: border-box"></div>
+<sc-for list="{{places}}" as="p" hint-placeholder-count="14">
+<div style="{{p.dot}}"></div>
+<span style="{{p.lab}}"><span style="font-weight: 600">{{p.name}}</span> <span class="mono" style="color: #D9CFC5">{{p.t}}°</span></span>
+</sc-for>
+<a href="Main.dc.html" aria-label="Open Mumbai heat report" style="position: absolute; left: 101px; top: 361px; width: 44px; height: 44px; border-radius: 50%"></a>
+<div class="mono" style="position: absolute; left: 18px; bottom: 16px; display: flex; align-items: center; gap: 8px; font-size: 11px; color: #A89C91">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l7 16 2.5-6.5L20 11z"></path></svg>
+CLICK ANYWHERE IN INDIA
+</div>
+</div>
+</div>
+</div>
+
+<div style="flex: 1 1 360px; min-width: 0; background: #16110E; border: 1px solid #2A221D; border-radius: 24px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px">
+<h2 class="disp" style="margin: 0; font-size: 24px; font-weight: 600">Highest risk tomorrow</h2>
+<p style="margin: 0 0 6px; font-size: 14px; color: #A89C91">Ranked by the 0–100 heat-risk index.</p>
+<sc-for list="{{ranking}}" as="r" hint-placeholder-count="14">
+<div style="display: grid; grid-template-columns: 26px minmax(0, 1fr) 54px 92px; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid #221B17">
+<span class="mono" style="font-size: 12px; color: #8A7E74">{{r.rank}}</span>
+<div style="display: flex; flex-direction: column; min-width: 0">
+<span style="font-size: 15px; font-weight: 500">{{r.name}}</span>
+<span style="font-size: 12px; color: #8A7E74">{{r.state}}</span>
+</div>
+<span class="mono" style="font-size: 13px; text-align: right; color: #D9CFC5">{{r.t}}°</span>
+<span style="{{r.pill}}">{{r.score}} {{r.cat}}</span>
+</div>
+</sc-for>
+</div>
+</section>
+
+<footer style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px 32px; padding: 36px 0 0; margin-top: 40px; border-top: 1px solid #2A221D; font-size: 12px; color: #A89C91; line-height: 1.6">
+<div style="max-width: 760px">Live weather from Open-Meteo. Heatwave rules follow India Meteorological Department criteria for plains, coastal and hill stations. Town and district scale, not street level.</div>
+<div class="mono" style="color: #D9CFC5">Made by Dev Trivedi</div>
+</footer>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#F06A2B","options":["#F06A2B","#F5A524","#E5453A"]},"$preview":{"width":1440,"height":1360}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#F06A2B';
+    const X = (lon) => (lon - 68) / 29.5 * 560 + 30;
+    const Y = (lat) => (37.5 - lat) / 31.5 * 620 + 20;
+    const tcol = (t) => t < 30 ? '#7EA6C4' : t < 33 ? '#D9B26A' : t < 35 ? '#EE9A4A' : '#E5512B';
+    const data = [
+      ['Pune', 'Maharashtra', 18.5204, 73.8567, 32.9, 8.96, 'Low', 'r'],
+      ['Mumbai', 'Maharashtra', 19.076, 72.8777, 35.6, 32.19, 'Moderate', 'l'],
+      ['Delhi', 'Delhi', 28.6139, 77.209, 34.4, 4.15, 'Low', 'r'],
+      ['Bengaluru', 'Karnataka', 12.9716, 77.5946, 29.1, 11.46, 'Low', 'l'],
+      ['Shimla', 'Himachal Pradesh', 31.1048, 77.1734, 21.1, 7.15, 'Low', 'r'],
+      ['Jaisalmer', 'Rajasthan', 26.9157, 70.9083, 35.8, 16.12, 'Low', 'r'],
+      ['Ahmedabad', 'Gujarat', 23.0225, 72.5714, 36.5, 14.74, 'Low', 'r'],
+      ['Nagpur', 'Maharashtra', 21.1458, 79.0882, 33.6, 2.87, 'Low', 'r'],
+      ['Lucknow', 'Uttar Pradesh', 26.8467, 80.9462, 32.1, 5.0, 'Low', 'r'],
+      ['Kolkata', 'West Bengal', 22.5726, 88.3639, 32.6, 7.37, 'Low', 'r'],
+      ['Chennai', 'Tamil Nadu', 13.0827, 80.2707, 33.4, 14.1, 'Low', 'r'],
+      ['Hyderabad', 'Telangana', 17.385, 78.4867, 32.9, 9.46, 'Low', 'r'],
+      ['Guwahati', 'Assam', 26.1445, 91.7362, 30.4, 6.4, 'Low', 'r'],
+      ['Port Blair', 'Andaman and Nicobar', 11.6234, 92.7265, 31.3, 10.14, 'Low', 'l']
+    ];
+    const places = data.map(([name, state, lat, lon, t, risk, cat, side]) => {
+      const x = X(lon), y = Y(lat), s = Math.round(12 + risk * 0.5);
+      const labPos = side === 'l'
+        ? 'right:' + (620 - x + s / 2 + 8).toFixed(0) + 'px;text-align:right;'
+        : 'left:' + (x + s / 2 + 8).toFixed(0) + 'px;';
+      return {
+        name, t: t.toFixed(1),
+        dot: 'position:absolute;border-radius:50%;box-shadow:0 0 0 3px #120E0B;left:' + (x - s / 2).toFixed(0) + 'px;top:' + (y - s / 2).toFixed(0) + 'px;width:' + s + 'px;height:' + s + 'px;background:' + tcol(t) + ';',
+        lab: 'position:absolute;white-space:nowrap;font-size:12px;color:#F4EEE7;top:' + (y - 9).toFixed(0) + 'px;' + labPos
+      };
+    });
+    const latLines = [35, 30, 25, 20, 15, 10].map((lat) => ({
+      text: lat + '°N',
+      line: 'position:absolute;left:0;right:0;height:1px;background:#1F1915;top:' + Y(lat).toFixed(0) + 'px;',
+      lab: 'position:absolute;right:8px;font-size:10px;color:#5E534C;top:' + (Y(lat) - 14).toFixed(0) + 'px;'
+    }));
+    const lonLines = [70, 75, 80, 85, 90, 95].map((lon) => ({
+      text: lon + '°E',
+      line: 'position:absolute;top:0;bottom:0;width:1px;background:#1F1915;left:' + X(lon).toFixed(0) + 'px;',
+      lab: 'position:absolute;top:6px;font-size:10px;color:#5E534C;left:' + (X(lon) + 4).toFixed(0) + 'px;'
+    }));
+    const catStyle = {
+      Low: 'background:rgba(79,181,154,0.16);color:#7FD3BB;',
+      Moderate: 'background:#E8C547;color:#1A1408;'
+    };
+    const ranking = data.slice().sort((a, b) => b[5] - a[5]).map((d, i) => ({
+      rank: String(i + 1).padStart(2, '0'), name: d[0], state: d[1], t: d[4].toFixed(1),
+      score: Math.round(d[5]), cat: d[6],
+      pill: 'justify-self:end;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;white-space:nowrap;' + catStyle[d[6]]
+    }));
+    return { accent, places, latLines, lonLines, ranking };
+  }
+}
+</script>
+</body>
+</html>
