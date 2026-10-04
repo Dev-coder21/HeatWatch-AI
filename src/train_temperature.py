@@ -3,7 +3,7 @@ import joblib
 
 from pathlib import Path
 
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import HistGradientBoostingRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 
@@ -98,10 +98,12 @@ def split_data(df):
 
 def train_model(X_train, y_train):
 
-    model = RandomForestRegressor(
-        n_estimators=300,
-        random_state=42,
-        n_jobs=-1
+    # Chosen over a 300-tree RandomForest (366 MB) and smaller RFs on 2023
+    # validation MAE; ~0.2 MB on disk.
+    model = HistGradientBoostingRegressor(
+        max_iter=500,
+        learning_rate=0.05,
+        random_state=42
     )
 
     model.fit(
@@ -247,7 +249,8 @@ def main():
 
     joblib.dump(
         model,
-        MODEL_FILE
+        MODEL_FILE,
+        compress=3
     )
 
     joblib.dump(
@@ -260,7 +263,7 @@ def main():
     # -----------------------------------
 
     metrics = {
-        "model": "RandomForestRegressor",
+        "model": "HistGradientBoostingRegressor",
         "random_state": 42,
         "training_end": TRAIN_END,
         "validation_end": VALIDATION_END,

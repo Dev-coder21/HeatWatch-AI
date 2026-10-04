@@ -21,8 +21,8 @@ ELEVATION = 224.0
 
 
 def weather_records(tmax_today=44.0, hot=True):
-    """7 past days + today + 7 forecast days."""
-    days = [TODAY + dt.timedelta(days=i) for i in range(-7, 8)]
+    """14 past days + today + 7 forecast days."""
+    days = [TODAY + dt.timedelta(days=i) for i in range(-14, 8)]
     base = 43.0 if hot else 33.0
     return [
         {
@@ -48,12 +48,22 @@ def mocked(tmp_path, monkeypatch):
         seen["elevation"].append((lat, lon))
         return ELEVATION
 
+    state = {"records": weather_records(), "fail": False}
+
     def fake_archive(lat, lon, elevation, start, end):
+        """Past years: flat 38 C. Recent days: the forecast's past days minus 0.5 C,
+        but only up to 6 days ago (the reanalysis lag), so the bias is +0.5 C."""
         seen["archive"].append(elevation)
         days = pd.date_range(start, end)
-        return pd.Series(38.0, index=days)
-
-    state = {"records": weather_records(), "fail": False}
+        if start.year < TODAY.year:
+            return pd.Series(38.0, index=days)
+        recent = {r["date"]: r["temperature_max"] - 0.5 for r in state["records"]}
+        cutoff = (TODAY - dt.timedelta(days=6)).isoformat()
+        return pd.Series(
+            [recent.get(d.date().isoformat()) if d.date().isoformat() <= cutoff else None for d in days],
+            index=days,
+            dtype=float,
+        )
 
     def fake_fetch_weather(profile):
         from src.service.weather import forecast_params
@@ -72,6 +82,12 @@ def mocked(tmp_path, monkeypatch):
         ),
     )
     monkeypatch.setattr("src.service.weather.fetch_weather", fake_fetch_weather)
+    monkeypatch.setattr(
+        "src.locations.profile.normal_bias",
+        lambda lat, lon, elevation, forecast_past, today: __import__(
+            "src.locations.normals", fromlist=["x"]
+        ).normal_bias(lat, lon, elevation, forecast_past, today=today, fetch=fake_archive),
+    )
     return {"store": store, "seen": seen, "state": state}
 
 
@@ -122,6 +138,37 @@ def test_no_feature_list_contains_latitude_or_longitude():
             assert "latitude" not in features and "longitude" not in features
 
 
+def test_normal_bias_uses_only_overlapping_days():
+    from src.locations.normals import normal_bias
+
+    forecast = {f"2026-05-{d:02d}": 40.0 for d in range(6, 20)}  # 14 past days
+
+    def archive(lat, lon, elevation, start, end):
+        days = pd.date_range(start, end)
+        # Reanalysis only up to 2026-05-14; forecast runs 1.5 C warmer than it.
+        return pd.Series([38.5 if d <= pd.Timestamp("2026-05-14") else None for d in days], index=days)
+
+    result = normal_bias(0, 0, 0, forecast, today=TODAY, fetch=archive)
+    assert result == {"bias_c": 1.5, "overlap_days": 9, "applied": True}
+
+
+def test_normal_bias_needs_enough_overlap_and_is_clipped():
+    from src.locations.normals import normal_bias
+
+    forecast = {f"2026-05-{d:02d}": 50.0 for d in range(6, 20)}
+
+    def sparse(lat, lon, elevation, start, end):
+        days = pd.date_range(start, end)
+        return pd.Series([30.0 if d.day in (6, 7) else None for d in days], index=days)
+
+    assert normal_bias(0, 0, 0, forecast, today=TODAY, fetch=sparse)["applied"] is False
+
+    def cold(lat, lon, elevation, start, end):
+        return pd.Series(30.0, index=pd.date_range(start, end))
+
+    assert normal_bias(0, 0, 0, forecast, today=TODAY, fetch=cold)["bias_c"] == 5.0
+
+
 # -----------------------------------
 # Service (mocked network)
 # -----------------------------------
@@ -152,9 +199,14 @@ def test_assess_shape_and_imd_labels(mocked):
     assert result["location"]["terrain_type"] == "plains"
     assert len(result["outlook"]) == 7 and len(result["recent_days"]) == 8
     assert 0 <= p["risk_score"] <= 100 and 0 <= p["heatwave_probability"] <= 1
-    # Normals are 38 C, observed days 43-44 C: departure >= 4.5 at >= 40 C -> heatwave by rule.
+    # Archive normal 38 C + bias 0.5 C = 38.5 C, measured on the 9 overlapping days (D-14..D-6).
+    assert p["normal_bias_correction_c"] == pytest.approx(0.5)
+    assert p["archive_normal_tmax"] == pytest.approx(38.0)
+    assert p["normal_tmax"] == pytest.approx(38.5)
+    assert result["data"]["normal_bias_overlap_days"] == 9
+    # Observed days 43-44 C vs normal 38.5 C: departure >= 4.5 at >= 40 C -> heatwave by rule.
     assert result["recent_days"][-1]["imd_rule_severity"] != "No Heatwave"
-    # Forecast days reach 44 C, normal 38 C (departure 6) -> heatwave at least.
+    # Forecast days 43-44 C, normal 38.5 C (departure >= 4.5) -> heatwave at least.
     assert all(day["imd_rule_severity"] != "No Heatwave" for day in result["outlook"])
     # The model regresses towards persistence, so tomorrow may sit just under the rule.
     assert result["advisory"]["level"] in {"high", "very_high", "extreme"}

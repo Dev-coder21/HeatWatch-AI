@@ -1,7 +1,8 @@
 """Live heat-risk assessment for any point in India (no web framework imports).
 
 assess(lat, lon):
-  profile (cached) -> normals (cached per cell/day) -> weather (cached ~1 h)
+  profile (cached) -> weather (cached ~1 h) -> archive normals + forecast-vs-archive
+  bias (both cached per cell/day)
   -> today's feature row -> models predict tomorrow -> IMD rules -> risk score
   -> advisory, plus a 7-day outlook of the raw forecast checked against IMD rules.
 """
@@ -15,7 +16,7 @@ from src.advisory import generate_advisory
 from src.config import settings, thresholds
 from src.heatwave_rules import SEVERITY_NAMES, classify, consecutive_days
 from src.locations.geocode import check_in_india, reverse
-from src.locations.profile import cache, get_normals, get_profile, grid_key
+from src.locations.profile import cache, get_normal_bias, get_normals, get_profile, grid_key
 from src.risk_score import calculate_risk_score, risk_category
 from src.service.models import explainer, load_models
 from src.service.weather import get_weather
@@ -83,21 +84,26 @@ def _context(lat, lon, store=None):
     weather, stale, age = get_weather(profile, store)
     today_index = settings()["api"]["past_days"]
     today = dt.date.fromisoformat(weather[today_index]["date"])
-    normals = get_normals(profile, today=today, store=store)
+    archive_normals = get_normals(profile, today=today, store=store)
+    forecast_past = {r["date"]: r["temperature_max"] for r in weather[:today_index]}
+    bias = get_normal_bias(profile, forecast_past, today=today, store=store)
+    # Put the archive normals on the forecast's footing before any departure is computed.
+    normals = {d: round(v + bias["bias_c"], 2) for d, v in archive_normals.items()}
     features = build_features(weather, normals, today_index)
-    return profile, weather, stale, age, today_index, normals, features
+    return profile, weather, stale, age, today_index, normals, features, bias, archive_normals
 
 
 def assess(lat, lon, store=None):
     store = store or cache()
-    profile, weather, stale, age, t, normals, features = _context(lat, lon, store)
+    profile, weather, stale, age, t, normals, features, bias, archive_normals = _context(lat, lon, store)
     models = load_models()
     terrain = profile["terrain_type"]
     w = pd.DataFrame(weather)
     w["normal_max_temp"] = w["date"].map(normals)
 
     # Observed days through today: IMD labels and the running heatwave streak.
-    observed = w.iloc[: t + 1]
+    # The last 7 days + today (earlier past days only serve the bias estimate).
+    observed = w.iloc[t - 7: t + 1]
     observed_labels = classify(observed["temperature_max"], observed["normal_max_temp"], terrain)
     streak_today = int(consecutive_days(observed_labels["heatwave"].values)[-1])
 
@@ -183,6 +189,8 @@ def assess(lat, lon, store=None):
             "predicted_tmax": _r(predicted),
             "raw_forecast_tmax": _r(tomorrow["temperature_max"]),
             "normal_tmax": _r(normal_tomorrow),
+            "archive_normal_tmax": _r(archive_normals[tomorrow["date"]]),
+            "normal_bias_correction_c": bias["bias_c"],
             "departure": _r(predicted - normal_tomorrow),
             "heatwave_probability": round(probability, 3),
             "model_severity": model_severity,
@@ -209,7 +217,9 @@ def assess(lat, lon, store=None):
         "data": {
             "stale": stale,
             "weather_age_s": round(age or 0.0),
-            "source": "Open-Meteo forecast API (past_days + forecast); normals from the Open-Meteo archive (ERA5) for the last 10 complete years; all values lapse-corrected by Open-Meteo to elevation_m",
+            "normal_bias_correction_c": bias["bias_c"],
+            "normal_bias_overlap_days": bias["overlap_days"],
+            "source": "Open-Meteo forecast API (past_days + forecast); normals from the Open-Meteo ERA5 archive (era5_seamless) for the last 10 complete years, shifted by the forecast-vs-archive bias measured on overlapping recent days; all values lapse-corrected by Open-Meteo to elevation_m",
             "grid_resolution": "~11 km cache cell; underlying weather models ~9-25 km",
         },
     }
@@ -218,7 +228,7 @@ def assess(lat, lon, store=None):
 def explain(lat, lon, store=None):
     """SHAP contributions for tomorrow's Tmax and heatwave probability; cached per cell/day."""
     store = store or cache()
-    profile, weather, stale, age, t, normals, features = _context(lat, lon, store)
+    profile, weather, stale, age, t, normals, features, _, _ = _context(lat, lon, store)
     key = f"{profile['grid_key']}|{weather[t]['date']}"
     cached, _ = store.get("explain", key, ttl=settings()["cache"]["weather_ttl_s"])
     if cached is not None:

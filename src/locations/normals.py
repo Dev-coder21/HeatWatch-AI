@@ -29,6 +29,7 @@ def archive_tmax(lat, lon, elevation, start, end):
             "start_date": start.isoformat(),
             "end_date": end.isoformat(),
             "daily": "temperature_2m_max",
+            "models": settings()["normals"]["archive_model"],
             "timezone": cfg["timezone"],
         },
     )
@@ -65,3 +66,30 @@ def compute_normals(lat, lon, elevation, today=None, fetch=archive_tmax):
             samples[day].extend(span.dropna().tolist())
 
     return {day.isoformat(): round(float(np.mean(v)), 2) for day, v in samples.items() if v}
+
+
+def normal_bias(lat, lon, elevation, forecast_past, today=None, fetch=archive_tmax):
+    """Mean (forecast - archive) Tmax over days where both exist.
+
+    forecast_past: {iso_date: tmax} from the forecast API's past days. The archive
+    lags ~6 days, so with 14 past days there are ~8-9 overlapping days. Adding this
+    bias to the archive normals puts them on the forecast's footing, so departures
+    are not inflated (or deflated) by the difference between the two sources.
+    """
+    cfg = settings()["normals"]
+    today = today or dt.date.today()
+    dates = sorted(d for d in forecast_past if d < today.isoformat())
+    if not dates:
+        return {"bias_c": 0.0, "overlap_days": 0, "applied": False}
+    archive = fetch(lat, lon, elevation, dt.date.fromisoformat(dates[0]), today - dt.timedelta(days=1))
+    diffs = [
+        forecast_past[d] - archive.get(pd.Timestamp(d))
+        for d in dates
+        if forecast_past[d] is not None
+        and np.isfinite(forecast_past[d])
+        and pd.notna(archive.get(pd.Timestamp(d)))
+    ]
+    if len(diffs) < cfg["bias_min_overlap_days"]:
+        return {"bias_c": 0.0, "overlap_days": len(diffs), "applied": False}
+    bias = float(np.clip(np.mean(diffs), -cfg["bias_max_abs_c"], cfg["bias_max_abs_c"]))
+    return {"bias_c": round(bias, 2), "overlap_days": len(diffs), "applied": True}

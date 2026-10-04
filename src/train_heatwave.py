@@ -114,8 +114,13 @@ def split_data(df):
 
 def train_heatwave_model(X_train, y_train):
 
+    # Shallower trees with min_samples_leaf=5 beat the unconstrained forest
+    # and HistGradientBoosting on 2023 validation PR-AUC (only 4 heatwave
+    # days in validation, so treat the choice as tentative).
     model = RandomForestClassifier(
         n_estimators=300,
+        min_samples_leaf=5,
+        max_depth=12,
         class_weight="balanced",
         random_state=42,
         n_jobs=-1
@@ -405,12 +410,14 @@ def main():
 
     joblib.dump(
         heatwave_model,
-        HEATWAVE_MODEL_FILE
+        HEATWAVE_MODEL_FILE,
+        compress=3
     )
 
     joblib.dump(
         severity_model,
-        SEVERITY_MODEL_FILE
+        SEVERITY_MODEL_FILE,
+        compress=3
     )
 
     joblib.dump(
@@ -426,7 +433,7 @@ def main():
 
         "heatwave_classifier": {
 
-            "model": "RandomForestClassifier",
+            "model": "RandomForestClassifier(min_samples_leaf=5, max_depth=12)",
 
             "random_state": 42,
 

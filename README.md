@@ -42,7 +42,7 @@ An end-to-end, machine learning-powered early warning system designed for **hype
 Heatwaves are among the deadliest extreme weather events driven by climate change, yet conventional meteorological advisories are frequently too broad to trigger timely, local interventions. 
 
 **HeatWatch AI** bridges this gap by:
-1. Forecasting next-day maximum temperature (test MAE ≈ 1.05 °C on the 5 training cities).
+1. Forecasting next-day maximum temperature (test MAE ≈ 0.99 °C on the 5 training cities).
 2. Applying localized, India Meteorological Department (IMD) compliant thresholds across distinct terrain categories (**Plains**, **Hilly**, and **Coastal** regions).
 3. Predicting the probability and severity of heatwaves using supervised ensemble learning.
 4. Computing a **Composite Heat Risk Index (0–100)** incorporating thermal stress, departures from normal, persistence, and relative humidity.
@@ -55,7 +55,7 @@ Heatwaves are among the deadliest extreme weather events driven by climate chang
 
 - **Hyperlocal Weather Modeling**: Tailored to distinct geographic and climatic topographies across India (Pune, Mumbai, Delhi, Bengaluru, Shimla).
 - **Dual-Model ML Architecture**:
-  - **Random Forest Regressor**: Predicts continuous next-day maximum temperatures (`target_temperature_max`).
+  - **HistGradientBoosting Regressor**: Predicts continuous next-day maximum temperatures (`target_temperature_max`).
   - **Random Forest Classifiers**: Predicts binary heatwave occurrence and multi-class severity (`Normal`, `Heatwave`, `Severe Heatwave`).
 - **Terrain-Aware Rule Engine**: Dynamically calculates climatological normal temperatures and departure deviations adhering to IMD criteria for coastal, plains, and hill stations.
 - **Explainable AI (XAI)**:
@@ -81,7 +81,7 @@ flowchart TD
     end
 
     subgraph Modeling & Explainability
-        G --> H[train_temperature.py<br/>RandomForestRegressor]
+        G --> H[train_temperature.py<br/>HistGradientBoostingRegressor]
         G --> I[train_heatwave.py<br/>RandomForestClassifier]
         H & I --> J[predict.py<br/>Forecast Generator]
         J --> K[risk_score.py<br/>Composite Risk Engine]
@@ -114,7 +114,7 @@ Heatwave definitions depend heavily on local geography. HeatWatch AI implements 
 ## Machine Learning Pipeline
 
 ### Regression: Maximum Temperature Forecast
-- **Model**: `RandomForestRegressor(n_estimators=300, random_state=42)`
+- **Model**: `HistGradientBoostingRegressor(max_iter=500, learning_rate=0.05)`, chosen on 2023 validation MAE over the original 300-tree Random Forest (366 MB) and two smaller forests. 0.2 MB on disk.
 - **Target**: Next-day maximum temperature (`target_temperature_max`)
 - **Key Features**: 
   - Autoregressive lags: `temp_max_lag_1`, `temp_max_lag_2`, `temp_max_lag_3`
@@ -126,18 +126,18 @@ Heatwave definitions depend heavily on local geography. HeatWatch AI implements 
 **Benchmark Performance:**
 | Dataset Split | Mean Absolute Error (MAE) | Root Mean Squared Error (RMSE) | $R^2$ Score |
 | :--- | :---: | :---: | :---: |
-| **Validation (2023)** | 0.96 °C | 1.33 °C | 0.964 |
-| **Test (2024)** | 1.05 °C | 1.41 °C | 0.963 |
+| **Validation (2023)** | 0.95 °C | 1.31 °C | 0.964 |
+| **Test (2024)** | 0.99 °C | 1.34 °C | 0.967 |
 
 ### Classification: Heatwave Occurrence & Severity
-- **Occurrence Model**: Binary `RandomForestClassifier` (class-weighted, 0.5 threshold) predicting whether heatwave criteria will be breached tomorrow. Heatwave days are rare (36 of 3,650 validation + test city-days), so accuracy and weighted F1 are misleading. Honest rare-class results:
+- **Occurrence Model**: Binary `RandomForestClassifier(n_estimators=300, min_samples_leaf=5, max_depth=12, class_weight="balanced")`, 0.5 threshold, predicting whether heatwave criteria will be breached tomorrow. It was chosen on 2023 validation PR-AUC over the unconstrained forest and HistGradientBoosting. Validation has only 4 heatwave days, so treat that choice as tentative. Heatwave days are rare (36 of 3,650 validation + test city-days), so accuracy and weighted F1 are misleading. Honest rare-class results:
 
-  | Split | Heatwave days | Caught (recall) | Precision | F1 | PR-AUC | Brier |
-  | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-  | Validation (2023) | 4 | 0 (0.00) | 0.00 | 0.00 | 0.08 | 0.003 |
-  | Test (2024) | 32 | 9 (0.28) | 0.82 | 0.42 | 0.48 | 0.013 |
+  | Split | Heatwave days | Caught (recall) | False alarms | Precision | F1 | PR-AUC | Brier |
+  | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+  | Validation (2023) | 4 | 1 (0.25) | 4 | 0.20 | 0.22 | 0.13 | 0.003 |
+  | Test (2024) | 32 | 23 (0.72) | 16 | 0.59 | 0.65 | 0.66 | 0.012 |
 
-  The classifier misses most heatwave days. The service therefore also applies the IMD rules to the predicted temperature and reports the higher severity.
+  The previous unconstrained forest caught 0/4 and 9/32. Probabilities are not calibrated. The service also applies the IMD rules to the predicted temperature and reports the higher severity.
 - **Severity Model**: Multi-class `RandomForestClassifier` assessing degree of event:
   - `0`: Normal
   - `1`: Heatwave
@@ -189,7 +189,7 @@ heatwave-intelligence/
 │   ├── package.json
 │   └── vite.config.js
 ├── models/
-│   ├── temperature_model.joblib    # Trained Random Forest Regressor
+│   ├── temperature_model.joblib    # Trained HistGradientBoosting Regressor
 │   ├── heatwave_model.joblib       # Trained Heatwave Occurrence Classifier
 │   ├── severity_model.joblib       # Trained Severity Classifier
 │   ├── temperature_features.joblib # Regression feature list
@@ -264,7 +264,7 @@ python src/train_heatwave.py
 ```
 
 Live predictions no longer need a batch step: the API fetches weather for any point on demand.
-`models/temperature_model.joblib` (~370 MB) is not committed, so run these two commands after cloning.
+The trained models (~1.6 MB in total) are committed in `models/`, so a fresh clone can start the API without retraining.
 
 ### 3. Start the FastAPI Backend
 
@@ -323,7 +323,7 @@ pytest tests -v
 
 ## Limitations
 
-The temperature, heatwave and severity models were trained on only five cities (Pune, Mumbai, Delhi, Bengaluru and Shimla, 2015–2022). The API runs them anywhere in India, but accuracy is lower in climates unlike those five, such as the Thar desert, the Northeast, the islands or high Himalayan sites. The heatwave classifier caught 9 of 32 heatwave days in the 2024 test year. Weather and normals come from ~9–25 km gridded models, not station observations. The archive normals (ERA5) can run cooler than the forecast model, especially at coastal points such as Mumbai, which inflates departures there. Treat outputs as decision support, not as official IMD warnings.
+The temperature, heatwave and severity models were trained on only five cities (Pune, Mumbai, Delhi, Bengaluru and Shimla, 2015–2022). The API runs them anywhere in India, but accuracy is lower in climates unlike those five, such as the Thar desert, the Northeast, the islands or high Himalayan sites. The heatwave classifier caught 9 of 32 heatwave days in the 2024 test year. Weather and normals come from ~9–25 km gridded models, not station observations. Normals come from ERA5 reanalysis and are shifted by the forecast-vs-ERA5 difference measured over the last ~9 overlapping days (`normal_bias_correction_c`). That removes most of the gap between the two sources, but a 9-day sample is noisy. ERA5 cells near the coast can still run cooler than the city's weather station. For Mumbai in early October 2026 the corrected normal is ~31.7 °C, against a station normal of roughly 33–34 °C. Treat outputs as decision support, not as official IMD warnings.
 
 ---
 

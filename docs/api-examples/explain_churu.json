@@ -7,182 +7,182 @@
   "forecast_date": "2026-10-05",
   "stale": false,
   "predicted_tmax": {
-    "base_value": 27.3051,
-    "prediction": 36.7874,
+    "base_value": 27.3089,
+    "prediction": 37.2233,
     "contributions": [
       {
         "feature": "temp_max_lag_1",
         "label": "Yesterday's max temperature",
         "value": 37.8,
-        "shap": 4.3353
+        "shap": 2.7279
+      },
+      {
+        "feature": "departure",
+        "label": "Today's departure from normal",
+        "value": 4.79,
+        "shap": 2.5548
+      },
+      {
+        "feature": "normal_max_temp",
+        "label": "Normal max temperature",
+        "value": 33.01,
+        "shap": 2.1503
       },
       {
         "feature": "temp_max_rolling_7",
         "label": "7-day average max temperature",
         "value": 35.44,
-        "shap": 1.6768
+        "shap": 2.0334
       },
       {
         "feature": "temp_max_rolling_3",
         "label": "3-day average max temperature",
         "value": 36.8,
-        "shap": 1.6576
-      },
-      {
-        "feature": "departure",
-        "label": "Today's departure from normal",
-        "value": 2.26,
-        "shap": 1.3425
-      },
-      {
-        "feature": "normal_max_temp",
-        "label": "Normal max temperature",
-        "value": 35.24,
-        "shap": 0.9103
-      },
-      {
-        "feature": "day_of_year",
-        "label": "Day of year",
-        "value": 277.0,
-        "shap": -0.2402
-      },
-      {
-        "feature": "temp_min_lag_1",
-        "label": "Yesterday's min temperature",
-        "value": 24.4,
-        "shap": -0.1838
+        "shap": 0.6253
       },
       {
         "feature": "temp_max_lag_2",
         "label": "Max temperature 2 days ago",
         "value": 36.8,
-        "shap": -0.0335
-      },
-      {
-        "feature": "wind_lag_1",
-        "label": "Yesterday's max wind",
-        "value": 18.0,
-        "shap": 0.024
-      },
-      {
-        "feature": "humidity_lag_1",
-        "label": "Yesterday's humidity",
-        "value": 31.0,
-        "shap": -0.0203
-      },
-      {
-        "feature": "precip_3d",
-        "label": "Rain in the last 3 days",
-        "value": 0.0,
-        "shap": 0.0078
+        "shap": -0.0682
       },
       {
         "feature": "temp_trend_3d",
         "label": "3-day temperature trend",
         "value": 2.0,
-        "shap": 0.0063
+        "shap": -0.0623
+      },
+      {
+        "feature": "humidity_lag_1",
+        "label": "Yesterday's humidity",
+        "value": 31.0,
+        "shap": -0.0297
+      },
+      {
+        "feature": "day_of_year",
+        "label": "Day of year",
+        "value": 277.0,
+        "shap": -0.0277
+      },
+      {
+        "feature": "precip_3d",
+        "label": "Rain in the last 3 days",
+        "value": 0.0,
+        "shap": 0.0241
+      },
+      {
+        "feature": "temp_min_lag_1",
+        "label": "Yesterday's min temperature",
+        "value": 24.4,
+        "shap": -0.0168
+      },
+      {
+        "feature": "wind_lag_1",
+        "label": "Yesterday's max wind",
+        "value": 18.0,
+        "shap": 0.0129
       },
       {
         "feature": "temp_max_lag_3",
         "label": "Max temperature 3 days ago",
         "value": 35.8,
-        "shap": -0.001
+        "shap": -0.0105
       },
       {
         "feature": "month",
         "label": "Month",
         "value": 10.0,
-        "shap": 0.0005
+        "shap": 0.0009
       }
     ]
   },
   "heatwave_probability": {
     "base_value": 0.4997,
-    "prediction": -0.0,
+    "prediction": 0.1982,
     "contributions": [
-      {
-        "feature": "departure",
-        "label": "Today's departure from normal",
-        "value": 2.26,
-        "shap": -0.2126
-      },
       {
         "feature": "day_of_year",
         "label": "Day of year",
         "value": 277.0,
-        "shap": -0.0926
+        "shap": -0.1261
       },
       {
-        "feature": "temp_max_lag_3",
-        "label": "Max temperature 3 days ago",
-        "value": 35.8,
-        "shap": -0.0392
+        "feature": "departure",
+        "label": "Today's departure from normal",
+        "value": 4.79,
+        "shap": 0.0829
       },
       {
         "feature": "month",
         "label": "Month",
         "value": 10.0,
-        "shap": -0.0358
+        "shap": -0.069
       },
       {
         "feature": "temp_max_rolling_3",
         "label": "3-day average max temperature",
         "value": 36.8,
-        "shap": -0.0244
-      },
-      {
-        "feature": "temp_max_rolling_7",
-        "label": "7-day average max temperature",
-        "value": 35.44,
-        "shap": -0.0232
+        "shap": -0.0495
       },
       {
         "feature": "temp_max_lag_1",
         "label": "Yesterday's max temperature",
         "value": 37.8,
-        "shap": -0.0215
+        "shap": -0.0487
+      },
+      {
+        "feature": "temp_max_lag_3",
+        "label": "Max temperature 3 days ago",
+        "value": 35.8,
+        "shap": -0.0467
+      },
+      {
+        "feature": "normal_max_temp",
+        "label": "Normal max temperature",
+        "value": 33.01,
+        "shap": -0.0225
       },
       {
         "feature": "temp_trend_3d",
         "label": "3-day temperature trend",
         "value": 2.0,
-        "shap": -0.0152
-      },
-      {
-        "feature": "wind_lag_1",
-        "label": "Yesterday's max wind",
-        "value": 18.0,
-        "shap": -0.0116
-      },
-      {
-        "feature": "temp_min_lag_1",
-        "label": "Yesterday's min temperature",
-        "value": 24.4,
-        "shap": -0.0103
+        "shap": -0.0129
       },
       {
         "feature": "temp_max_lag_2",
         "label": "Max temperature 2 days ago",
         "value": 36.8,
+        "shap": -0.0123
+      },
+      {
+        "feature": "wind_lag_1",
+        "label": "Yesterday's max wind",
+        "value": 18.0,
         "shap": -0.0102
       },
       {
-        "feature": "humidity_lag_1",
-        "label": "Yesterday's humidity",
-        "value": 31.0,
-        "shap": -0.0038
+        "feature": "temp_max_rolling_7",
+        "label": "7-day average max temperature",
+        "value": 35.44,
+        "shap": 0.0067
       },
       {
         "feature": "precip_3d",
         "label": "Rain in the last 3 days",
         "value": 0.0,
-        "shap": 0.0015
+        "shap": 0.0044
       },
       {
-        "feature": "normal_max_temp",
-        "label": "Normal max temperature",
-        "value": 35.24,
-        "shap": -0.0008
+        "feature": "humidity_lag_1",
+        "label": "Yesterday's humidity",
+        "value": 31.0,
+        "shap": 0.0036
+      },
+      {
+        "feature": "temp_min_lag_1",
+        "label": "Yesterday's min temperature",
+        "value": 24.4,
+        "shap": -0.0012
       }
     ]
   }

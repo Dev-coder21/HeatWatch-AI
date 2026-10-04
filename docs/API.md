@@ -2,7 +2,7 @@
 
 Base URL (local): `http://localhost:8000`. Interactive schema: `/docs` (OpenAPI).
 All endpoints are `GET`, return JSON, and are typed with Pydantic models in
-[`backend/schemas.py`](../backend/schemas.py). Real responses captured on 2026-10-04
+[`backend/schemas.py`](../backend/schemas.py). Real responses captured on 2026-10-04 (refreshed after the normal bias correction)
 live in [`docs/api-examples/`](api-examples/).
 
 ## Conventions
@@ -19,7 +19,7 @@ live in [`docs/api-examples/`](api-examples/).
 - **Severity** values: `"No Heatwave"`, `"Heatwave"`, `"Severe Heatwave"`.
 - **Risk categories**: `Low` (0–19), `Moderate` (20–39), `High` (40–59), `Very High` (60–79),
   `Extreme` (80–100).
-- **Caching**: `/api/risk` ~1 h per cell, normals 24 h per cell, profiles forever.
+- **Caching**: `/api/risk` ~1 h per cell, normals and normal bias 24 h per cell, profiles forever.
 
 ### Errors
 
@@ -130,10 +130,18 @@ and a 7-day outlook.
   `hilly`), `distance_to_coast_km`.
 - `issued_date`, `forecast_date`.
 - `prediction` (tomorrow):
-  - `predicted_tmax`: ML (Random Forest) predicted max temperature.
+  - `predicted_tmax`: ML (HistGradientBoosting) predicted max temperature.
   - `raw_forecast_tmax`: Open-Meteo's own forecast for tomorrow, for comparison.
-  - `normal_tmax`, `departure` (= predicted − normal).
-  - `heatwave_probability`: 0–1 from the heatwave classifier (not calibrated; see README).
+  - `normal_tmax`: the normal used for every departure, = `archive_normal_tmax` +
+    `normal_bias_correction_c`.
+  - `archive_normal_tmax`: mean ERA5 (`era5_seamless`) Tmax for this calendar window over the
+    last 10 complete years.
+  - `normal_bias_correction_c`: mean (forecast − ERA5) Tmax over the recent days where both
+    exist (~9 of the last 14), clipped to ±5 °C. It puts the archive normal on the same
+    footing as the forecast, so departures aren't inflated by the gap between the two
+    sources. 0 if fewer than 3 overlapping days.
+  - `departure` (= predicted − normal).
+  - `heatwave_probability`: 0–1 from the heatwave classifier (Random Forest, not calibrated; see README).
   - `model_severity`: severity classifier output.
   - `imd_rule_severity` and `imd_rule` (`none` | `departure` | `absolute`): IMD criteria
     applied to `predicted_tmax` (includes the plains 45/47 °C absolute rule).
@@ -146,12 +154,15 @@ and a 7-day outlook.
 - `advisory`: `level` (`low` … `extreme`), `general` text, `audiences.outdoor_workers`,
   `audiences.elderly`, `audiences.children`, `context[]` (short factual sentences).
 - `today`: today's Tmax (forecast-API value; partly forecast), normal, departure, streak.
-- `recent_days[]`: 8 entries (7 past days + today) with `tmax`, `tmin`, `normal_tmax`,
+- `recent_days[]`: 8 entries (7 past days + today; the API fetches 14 past days but only the bias estimate uses the older ones) with `tmax`, `tmin`, `normal_tmax`,
   `departure`, `imd_rule_severity`.
 - `outlook[]`: 7 entries (tomorrow … +7 days) of the **raw Open-Meteo forecast** checked
   against IMD rules: `forecast_tmax`, `forecast_tmin`, `normal_tmax`, `departure`,
   `humidity`, `precipitation_mm`, `imd_rule_severity`. The ML models only predict tomorrow.
-- `data`: `stale`, `weather_age_s`, `source`, `grid_resolution`.
+- `data`: `stale`, `weather_age_s`, `normal_bias_correction_c` (same value as in
+  `prediction`), `normal_bias_overlap_days`, `source`, `grid_resolution`.
+
+All `normal_tmax` values in `today`, `recent_days` and `outlook` include the bias correction.
 
 `GET /api/risk?lat=28.6139&lon=77.2090` (Delhi, complete response):
 
@@ -173,9 +184,11 @@ and a 7-day outlook.
   "issued_date": "2026-10-04",
   "forecast_date": "2026-10-05",
   "prediction": {
-    "predicted_tmax": 33.3,
-    "raw_forecast_tmax": 35.0,
-    "normal_tmax": 32.6,
+    "predicted_tmax": 34.4,
+    "raw_forecast_tmax": 34.8,
+    "normal_tmax": 33.6,
+    "archive_normal_tmax": 32.2,
+    "normal_bias_correction_c": 1.37,
     "departure": 0.8,
     "heatwave_probability": 0.0,
     "model_severity": "No Heatwave",
@@ -184,12 +197,12 @@ and a 7-day outlook.
     "severity": "No Heatwave",
     "consecutive_heatwave_days": 0,
     "humidity": 54.0,
-    "risk_score": 4.08,
+    "risk_score": 4.15,
     "risk_category": "Low",
     "risk_components": {
       "temperature": 0.0,
       "heatwave_probability": 0.0,
-      "anomaly": 11.64,
+      "anomaly": 12.02,
       "persistence": 0.0,
       "humidity": 35.0
     },
@@ -211,9 +224,9 @@ and a 7-day outlook.
   },
   "today": {
     "date": "2026-10-04",
-    "tmax": 34.4,
-    "normal_tmax": 32.6,
-    "departure": 1.8,
+    "tmax": 35.2,
+    "normal_tmax": 33.6,
+    "departure": 1.6,
     "consecutive_heatwave_days": 0
   },
   "recent_days": [
@@ -221,125 +234,125 @@ and a 7-day outlook.
       "date": "2026-09-27",
       "tmax": 28.6,
       "tmin": 22.2,
-      "normal_tmax": 32.6,
-      "departure": -4.0,
+      "normal_tmax": 33.5,
+      "departure": -4.9,
       "imd_rule_severity": "No Heatwave"
     },
     {
       "date": "2026-09-28",
       "tmax": 28.2,
       "tmin": 22.2,
-      "normal_tmax": 32.6,
-      "departure": -4.4,
+      "normal_tmax": 33.5,
+      "departure": -5.3,
       "imd_rule_severity": "No Heatwave"
     },
     {
       "date": "2026-09-29",
       "tmax": 30.8,
       "tmin": 22.0,
-      "normal_tmax": 32.6,
-      "departure": -1.8,
+      "normal_tmax": 33.4,
+      "departure": -2.6,
       "imd_rule_severity": "No Heatwave"
     },
     {
       "date": "2026-09-30",
       "tmax": 32.5,
       "tmin": 23.2,
-      "normal_tmax": 32.6,
-      "departure": -0.1,
+      "normal_tmax": 33.5,
+      "departure": -1.0,
       "imd_rule_severity": "No Heatwave"
     },
     {
       "date": "2026-10-01",
       "tmax": 33.4,
       "tmin": 23.8,
-      "normal_tmax": 32.7,
-      "departure": 0.7,
+      "normal_tmax": 33.6,
+      "departure": -0.2,
       "imd_rule_severity": "No Heatwave"
     },
     {
       "date": "2026-10-02",
       "tmax": 34.5,
       "tmin": 23.9,
-      "normal_tmax": 32.7,
-      "departure": 1.8,
+      "normal_tmax": 33.6,
+      "departure": 0.9,
       "imd_rule_severity": "No Heatwave"
     },
     {
       "date": "2026-10-03",
       "tmax": 35.5,
       "tmin": 24.3,
-      "normal_tmax": 32.7,
-      "departure": 2.8,
+      "normal_tmax": 33.6,
+      "departure": 1.9,
       "imd_rule_severity": "No Heatwave"
     },
     {
       "date": "2026-10-04",
-      "tmax": 34.4,
+      "tmax": 35.2,
       "tmin": 25.1,
-      "normal_tmax": 32.6,
-      "departure": 1.8,
+      "normal_tmax": 33.6,
+      "departure": 1.6,
       "imd_rule_severity": "No Heatwave"
     }
   ],
   "outlook": [
     {
       "date": "2026-10-05",
-      "forecast_tmax": 35.0,
-      "forecast_tmin": 24.6,
-      "normal_tmax": 32.6,
-      "departure": 2.4,
+      "forecast_tmax": 34.8,
+      "forecast_tmin": 24.3,
+      "normal_tmax": 33.6,
+      "departure": 1.2,
       "humidity": 54.0,
       "precipitation_mm": 0.0,
       "imd_rule_severity": "No Heatwave"
     },
     {
       "date": "2026-10-06",
-      "forecast_tmax": 34.6,
-      "forecast_tmin": 23.7,
-      "normal_tmax": 32.6,
-      "departure": 2.0,
-      "humidity": 67.0,
+      "forecast_tmax": 34.4,
+      "forecast_tmin": 24.4,
+      "normal_tmax": 33.5,
+      "departure": 0.9,
+      "humidity": 66.0,
       "precipitation_mm": 0.0,
       "imd_rule_severity": "No Heatwave"
     },
     {
       "date": "2026-10-07",
-      "forecast_tmax": 33.4,
-      "forecast_tmin": 23.1,
-      "normal_tmax": 32.6,
-      "departure": 0.8,
-      "humidity": 71.0,
+      "forecast_tmax": 34.0,
+      "forecast_tmin": 23.8,
+      "normal_tmax": 33.5,
+      "departure": 0.5,
+      "humidity": 69.0,
       "precipitation_mm": 0.0,
       "imd_rule_severity": "No Heatwave"
     },
     {
       "date": "2026-10-08",
-      "forecast_tmax": 32.8,
-      "forecast_tmin": 23.6,
-      "normal_tmax": 32.6,
-      "departure": 0.2,
-      "humidity": 67.0,
+      "forecast_tmax": 33.2,
+      "forecast_tmin": 22.8,
+      "normal_tmax": 33.5,
+      "departure": -0.3,
+      "humidity": 71.0,
       "precipitation_mm": 1.2,
       "imd_rule_severity": "No Heatwave"
     },
     {
       "date": "2026-10-09",
-      "forecast_tmax": 30.2,
-      "forecast_tmin": 22.5,
-      "normal_tmax": 32.5,
+      "forecast_tmax": 31.1,
+      "forecast_tmin": 21.1,
+      "normal_tmax": 33.4,
       "departure": -2.3,
-      "humidity": 75.0,
+      "humidity": 73.0,
       "precipitation_mm": 1.5,
       "imd_rule_severity": "No Heatwave"
     },
     {
       "date": "2026-10-10",
       "forecast_tmax": 29.9,
-      "forecast_tmin": 20.7,
-      "normal_tmax": 32.4,
-      "departure": -2.5,
-      "humidity": 75.0,
+      "forecast_tmin": 22.4,
+      "normal_tmax": 33.3,
+      "departure": -3.4,
+      "humidity": 73.0,
       "precipitation_mm": 0.0,
       "imd_rule_severity": "No Heatwave"
     },
@@ -347,8 +360,8 @@ and a 7-day outlook.
       "date": "2026-10-11",
       "forecast_tmax": 30.9,
       "forecast_tmin": 22.5,
-      "normal_tmax": 32.2,
-      "departure": -1.3,
+      "normal_tmax": 33.2,
+      "departure": -2.3,
       "humidity": 70.0,
       "precipitation_mm": 0.0,
       "imd_rule_severity": "No Heatwave"
@@ -356,8 +369,10 @@ and a 7-day outlook.
   ],
   "data": {
     "stale": false,
-    "weather_age_s": 0,
-    "source": "Open-Meteo forecast API (past_days + forecast); normals from the Open-Meteo archive (ERA5) for the last 10 complete years; all values lapse-corrected by Open-Meteo to elevation_m",
+    "weather_age_s": 153,
+    "normal_bias_correction_c": 1.37,
+    "normal_bias_overlap_days": 9,
+    "source": "Open-Meteo forecast API (past_days + forecast); normals from the Open-Meteo ERA5 archive (era5_seamless) for the last 10 complete years, shifted by the forecast-vs-archive bias measured on overlapping recent days; all values lapse-corrected by Open-Meteo to elevation_m",
     "grid_resolution": "~11 km cache cell; underlying weather models ~9-25 km"
   }
 }
@@ -384,189 +399,189 @@ month, day of year. No latitude/longitude.
 ```json
 {
   "location": {
-    "name": "New Delhi",
+    "name": "Delhi",
     "grid_key": "28.60,77.20"
   },
   "issued_date": "2026-10-04",
   "forecast_date": "2026-10-05",
   "stale": false,
   "predicted_tmax": {
-    "base_value": 27.3051,
-    "prediction": 33.3463,
+    "base_value": 27.3089,
+    "prediction": 34.3515,
     "contributions": [
+      {
+        "feature": "normal_max_temp",
+        "label": "Normal max temperature",
+        "value": 33.58,
+        "shap": 2.4872
+      },
       {
         "feature": "temp_max_lag_1",
         "label": "Yesterday's max temperature",
         "value": 35.5,
-        "shap": 2.4956
-      },
-      {
-        "feature": "temp_max_rolling_3",
-        "label": "3-day average max temperature",
-        "value": 34.47,
-        "shap": 1.4835
+        "shap": 1.9538
       },
       {
         "feature": "temp_max_rolling_7",
         "label": "7-day average max temperature",
         "value": 31.93,
-        "shap": 1.333
+        "shap": 1.478
       },
       {
         "feature": "departure",
         "label": "Today's departure from normal",
-        "value": 1.76,
-        "shap": 0.51
+        "value": 1.62,
+        "shap": 0.8567
       },
       {
-        "feature": "normal_max_temp",
-        "label": "Normal max temperature",
-        "value": 32.64,
-        "shap": 0.4267
-      },
-      {
-        "feature": "day_of_year",
-        "label": "Day of year",
-        "value": 277.0,
-        "shap": -0.0697
-      },
-      {
-        "feature": "wind_lag_1",
-        "label": "Yesterday's max wind",
-        "value": 11.4,
-        "shap": -0.0394
-      },
-      {
-        "feature": "temp_trend_3d",
-        "label": "3-day temperature trend",
-        "value": 2.1,
-        "shap": -0.0327
-      },
-      {
-        "feature": "temp_min_lag_1",
-        "label": "Yesterday's min temperature",
-        "value": 24.3,
-        "shap": -0.0302
-      },
-      {
-        "feature": "temp_max_lag_3",
-        "label": "Max temperature 3 days ago",
-        "value": 33.4,
-        "shap": -0.025
-      },
-      {
-        "feature": "humidity_lag_1",
-        "label": "Yesterday's humidity",
-        "value": 56.0,
-        "shap": -0.0139
-      },
-      {
-        "feature": "precip_3d",
-        "label": "Rain in the last 3 days",
-        "value": 0.0,
-        "shap": 0.007
-      },
-      {
-        "feature": "month",
-        "label": "Month",
-        "value": 10.0,
-        "shap": -0.0021
+        "feature": "temp_max_rolling_3",
+        "label": "3-day average max temperature",
+        "value": 34.47,
+        "shap": 0.526
       },
       {
         "feature": "temp_max_lag_2",
         "label": "Max temperature 2 days ago",
         "value": 34.5,
-        "shap": -0.0016
+        "shap": -0.0809
+      },
+      {
+        "feature": "day_of_year",
+        "label": "Day of year",
+        "value": 277.0,
+        "shap": -0.0751
+      },
+      {
+        "feature": "temp_trend_3d",
+        "label": "3-day temperature trend",
+        "value": 2.1,
+        "shap": -0.0587
+      },
+      {
+        "feature": "temp_min_lag_1",
+        "label": "Yesterday's min temperature",
+        "value": 24.3,
+        "shap": -0.04
+      },
+      {
+        "feature": "precip_3d",
+        "label": "Rain in the last 3 days",
+        "value": 0.0,
+        "shap": 0.0133
+      },
+      {
+        "feature": "wind_lag_1",
+        "label": "Yesterday's max wind",
+        "value": 11.4,
+        "shap": -0.0124
+      },
+      {
+        "feature": "humidity_lag_1",
+        "label": "Yesterday's humidity",
+        "value": 56.0,
+        "shap": -0.0075
+      },
+      {
+        "feature": "temp_max_lag_3",
+        "label": "Max temperature 3 days ago",
+        "value": 33.4,
+        "shap": 0.0019
+      },
+      {
+        "feature": "month",
+        "label": "Month",
+        "value": 10.0,
+        "shap": 0.0003
       }
     ]
   },
   "heatwave_probability": {
     "base_value": 0.4997,
-    "prediction": 0.0002,
+    "prediction": 0.0001,
     "contributions": [
       {
         "feature": "departure",
         "label": "Today's departure from normal",
-        "value": 1.76,
-        "shap": -0.1215
-      },
-      {
-        "feature": "temp_max_rolling_7",
-        "label": "7-day average max temperature",
-        "value": 31.93,
-        "shap": -0.0673
+        "value": 1.62,
+        "shap": -0.1714
       },
       {
         "feature": "temp_max_lag_1",
         "label": "Yesterday's max temperature",
         "value": 35.5,
-        "shap": -0.0627
+        "shap": -0.0786
+      },
+      {
+        "feature": "temp_max_rolling_7",
+        "label": "7-day average max temperature",
+        "value": 31.93,
+        "shap": -0.0523
       },
       {
         "feature": "day_of_year",
         "label": "Day of year",
         "value": 277.0,
-        "shap": -0.0595
-      },
-      {
-        "feature": "wind_lag_1",
-        "label": "Yesterday's max wind",
-        "value": 11.4,
-        "shap": -0.0386
+        "shap": -0.0442
       },
       {
         "feature": "temp_max_rolling_3",
         "label": "3-day average max temperature",
         "value": 34.47,
-        "shap": -0.0333
-      },
-      {
-        "feature": "humidity_lag_1",
-        "label": "Yesterday's humidity",
-        "value": 56.0,
-        "shap": -0.0299
+        "shap": -0.0419
       },
       {
         "feature": "temp_max_lag_2",
         "label": "Max temperature 2 days ago",
         "value": 34.5,
-        "shap": -0.028
+        "shap": -0.0328
       },
       {
-        "feature": "temp_max_lag_3",
-        "label": "Max temperature 3 days ago",
-        "value": 33.4,
-        "shap": -0.0235
+        "feature": "wind_lag_1",
+        "label": "Yesterday's max wind",
+        "value": 11.4,
+        "shap": -0.0256
       },
       {
         "feature": "month",
         "label": "Month",
         "value": 10.0,
-        "shap": -0.0228
+        "shap": -0.0252
       },
       {
-        "feature": "temp_min_lag_1",
-        "label": "Yesterday's min temperature",
-        "value": 24.3,
-        "shap": -0.0051
+        "feature": "humidity_lag_1",
+        "label": "Yesterday's humidity",
+        "value": 56.0,
+        "shap": -0.0244
       },
       {
-        "feature": "temp_trend_3d",
-        "label": "3-day temperature trend",
-        "value": 2.1,
-        "shap": -0.0047
+        "feature": "temp_max_lag_3",
+        "label": "Max temperature 3 days ago",
+        "value": 33.4,
+        "shap": -0.016
       },
       {
         "feature": "normal_max_temp",
         "label": "Normal max temperature",
-        "value": 32.64,
-        "shap": -0.004
+        "value": 33.58,
+        "shap": 0.0119
       },
       {
         "feature": "precip_3d",
         "label": "Rain in the last 3 days",
         "value": 0.0,
-        "shap": 0.0014
+        "shap": 0.0033
+      },
+      {
+        "feature": "temp_trend_3d",
+        "label": "3-day temperature trend",
+        "value": 2.1,
+        "shap": -0.0031
+      },
+      {
+        "feature": "temp_min_lag_1",
+        "label": "Yesterday's min temperature",
+        "value": 24.3,
+        "shap": 0.0007
       }
     ]
   }
@@ -592,10 +607,10 @@ Tomorrow's headline numbers for the featured places in `config/locations.csv`. E
       "lon": 73.8567,
       "terrain_type": "plains",
       "forecast_date": "2026-10-05",
-      "predicted_tmax": 33.2,
+      "predicted_tmax": 32.9,
       "heatwave_probability": 0.0,
       "severity": "No Heatwave",
-      "risk_score": 16.24,
+      "risk_score": 8.96,
       "risk_category": "Low",
       "stale": false,
       "error": null
@@ -608,11 +623,11 @@ Tomorrow's headline numbers for the featured places in `config/locations.csv`. E
       "lon": 72.8777,
       "terrain_type": "coastal",
       "forecast_date": "2026-10-05",
-      "predicted_tmax": 36.7,
-      "heatwave_probability": 0.01,
+      "predicted_tmax": 35.6,
+      "heatwave_probability": 0.11,
       "severity": "No Heatwave",
-      "risk_score": 40.05,
-      "risk_category": "High",
+      "risk_score": 32.19,
+      "risk_category": "Moderate",
       "stale": false,
       "error": null
     },
@@ -624,10 +639,10 @@ Tomorrow's headline numbers for the featured places in `config/locations.csv`. E
       "lon": 77.209,
       "terrain_type": "plains",
       "forecast_date": "2026-10-05",
-      "predicted_tmax": 33.3,
+      "predicted_tmax": 34.4,
       "heatwave_probability": 0.0,
       "severity": "No Heatwave",
-      "risk_score": 4.08,
+      "risk_score": 4.15,
       "risk_category": "Low",
       "stale": false,
       "error": null
@@ -640,10 +655,10 @@ Tomorrow's headline numbers for the featured places in `config/locations.csv`. E
       "lon": 77.5946,
       "terrain_type": "plains",
       "forecast_date": "2026-10-05",
-      "predicted_tmax": 29.6,
+      "predicted_tmax": 29.1,
       "heatwave_probability": 0.0,
       "severity": "No Heatwave",
-      "risk_score": 11.91,
+      "risk_score": 11.46,
       "risk_category": "Low",
       "stale": false,
       "error": null
@@ -656,10 +671,10 @@ Tomorrow's headline numbers for the featured places in `config/locations.csv`. E
       "lon": 77.1734,
       "terrain_type": "hilly",
       "forecast_date": "2026-10-05",
-      "predicted_tmax": 20.7,
+      "predicted_tmax": 21.1,
       "heatwave_probability": 0.0,
       "severity": "No Heatwave",
-      "risk_score": 8.16,
+      "risk_score": 7.15,
       "risk_category": "Low",
       "stale": false,
       "error": null
@@ -672,10 +687,10 @@ Tomorrow's headline numbers for the featured places in `config/locations.csv`. E
       "lon": 70.9083,
       "terrain_type": "plains",
       "forecast_date": "2026-10-05",
-      "predicted_tmax": 36.4,
-      "heatwave_probability": 0.003,
+      "predicted_tmax": 35.8,
+      "heatwave_probability": 0.241,
       "severity": "No Heatwave",
-      "risk_score": 9.22,
+      "risk_score": 16.12,
       "risk_category": "Low",
       "stale": false,
       "error": null
@@ -688,10 +703,10 @@ Tomorrow's headline numbers for the featured places in `config/locations.csv`. E
       "lon": 72.5714,
       "terrain_type": "plains",
       "forecast_date": "2026-10-05",
-      "predicted_tmax": 34.8,
-      "heatwave_probability": 0.0,
+      "predicted_tmax": 36.5,
+      "heatwave_probability": 0.013,
       "severity": "No Heatwave",
-      "risk_score": 7.05,
+      "risk_score": 14.74,
       "risk_category": "Low",
       "stale": false,
       "error": null
@@ -704,10 +719,10 @@ Tomorrow's headline numbers for the featured places in `config/locations.csv`. E
       "lon": 79.0882,
       "terrain_type": "plains",
       "forecast_date": "2026-10-05",
-      "predicted_tmax": 34.4,
-      "heatwave_probability": 0.003,
+      "predicted_tmax": 33.6,
+      "heatwave_probability": 0.0,
       "severity": "No Heatwave",
-      "risk_score": 9.77,
+      "risk_score": 2.87,
       "risk_category": "Low",
       "stale": false,
       "error": null
@@ -720,10 +735,10 @@ Tomorrow's headline numbers for the featured places in `config/locations.csv`. E
       "lon": 80.9462,
       "terrain_type": "plains",
       "forecast_date": "2026-10-05",
-      "predicted_tmax": 32.3,
+      "predicted_tmax": 32.1,
       "heatwave_probability": 0.0,
       "severity": "No Heatwave",
-      "risk_score": 5.43,
+      "risk_score": 5.0,
       "risk_category": "Low",
       "stale": false,
       "error": null
@@ -736,10 +751,10 @@ Tomorrow's headline numbers for the featured places in `config/locations.csv`. E
       "lon": 88.3639,
       "terrain_type": "plains",
       "forecast_date": "2026-10-05",
-      "predicted_tmax": 32.9,
+      "predicted_tmax": 32.6,
       "heatwave_probability": 0.0,
       "severity": "No Heatwave",
-      "risk_score": 9.66,
+      "risk_score": 7.37,
       "risk_category": "Low",
       "stale": false,
       "error": null
@@ -752,11 +767,11 @@ Tomorrow's headline numbers for the featured places in `config/locations.csv`. E
       "lon": 80.2707,
       "terrain_type": "coastal",
       "forecast_date": "2026-10-05",
-      "predicted_tmax": 34.6,
-      "heatwave_probability": 0.007,
+      "predicted_tmax": 33.4,
+      "heatwave_probability": 0.0,
       "severity": "No Heatwave",
-      "risk_score": 23.92,
-      "risk_category": "Moderate",
+      "risk_score": 14.1,
+      "risk_category": "Low",
       "stale": false,
       "error": null
     },
@@ -768,10 +783,10 @@ Tomorrow's headline numbers for the featured places in `config/locations.csv`. E
       "lon": 78.4867,
       "terrain_type": "plains",
       "forecast_date": "2026-10-05",
-      "predicted_tmax": 33.6,
-      "heatwave_probability": 0.01,
+      "predicted_tmax": 32.9,
+      "heatwave_probability": 0.022,
       "severity": "No Heatwave",
-      "risk_score": 13.42,
+      "risk_score": 9.46,
       "risk_category": "Low",
       "stale": false,
       "error": null
@@ -784,10 +799,10 @@ Tomorrow's headline numbers for the featured places in `config/locations.csv`. E
       "lon": 91.7362,
       "terrain_type": "plains",
       "forecast_date": "2026-10-05",
-      "predicted_tmax": 30.3,
-      "heatwave_probability": 0.003,
+      "predicted_tmax": 30.4,
+      "heatwave_probability": 0.006,
       "severity": "No Heatwave",
-      "risk_score": 6.84,
+      "risk_score": 6.4,
       "risk_category": "Low",
       "stale": false,
       "error": null
@@ -800,10 +815,10 @@ Tomorrow's headline numbers for the featured places in `config/locations.csv`. E
       "lon": 92.7265,
       "terrain_type": "coastal",
       "forecast_date": "2026-10-05",
-      "predicted_tmax": 31.7,
+      "predicted_tmax": 31.3,
       "heatwave_probability": 0.0,
       "severity": "No Heatwave",
-      "risk_score": 14.66,
+      "risk_score": 10.14,
       "risk_category": "Low",
       "stale": false,
       "error": null
@@ -840,11 +855,11 @@ Tomorrow's headline numbers for the featured places in `config/locations.csv`. E
   ],
   "upstream_reachable": true,
   "cache": {
-    "profile": 16,
-    "normals": 16,
-    "weather": 16,
-    "risk": 16,
-    "explain": 8
+    "profile": 6,
+    "normals": 6,
+    "weather": 6,
+    "risk": 0,
+    "explain": 0
   }
 }
 ```

@@ -63,6 +63,8 @@ class Prediction(BaseModel):
     predicted_tmax: float
     raw_forecast_tmax: Optional[float] = None
     normal_tmax: float
+    archive_normal_tmax: float
+    normal_bias_correction_c: float
     departure: float
     heatwave_probability: float
     model_severity: Severity
@@ -121,6 +123,8 @@ class OutlookDay(BaseModel):
 class DataInfo(BaseModel):
     stale: bool
     weather_age_s: int
+    normal_bias_correction_c: float
+    normal_bias_overlap_days: int
     source: str
     grid_resolution: str
 

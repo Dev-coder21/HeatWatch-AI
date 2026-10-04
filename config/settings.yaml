@@ -2,7 +2,9 @@
 # Heatwave thresholds and risk weights live in thresholds.yaml.
 
 api:
-  past_days: 7
+  # 14 past days: features use the last 7; the extra days overlap the ERA5 archive
+  # (which lags ~6 days) so the forecast-vs-archive bias can be measured.
+  past_days: 14
   forecast_days: 7
   geocoding_url: https://geocoding-api.open-meteo.com/v1/search
   elevation_url: https://api.open-meteo.com/v1/elevation
@@ -28,13 +30,19 @@ normals:
   # On-demand normals: mean archive Tmax for the same calendar window in each of the
   # last N complete years (one small archive call per year, ~16 call-units per city).
   years: 10
+  # Pure reanalysis, consistent across years. Open-Meteo's default archive (best_match)
+  # mixes in the forecast model's own analysis for recent years and recent days.
+  archive_model: era5_seamless
   window_days: 7          # +/- days around each date
   past_days_needed: 7     # normals also needed for the observed days (persistence)
   forecast_days_needed: 7
+  # Normal bias correction: mean(forecast past days - archive) Tmax over overlapping days.
+  bias_min_overlap_days: 3
+  bias_max_abs_c: 5.0
 
 cache:
   dir: data/cache
   profile_ttl_s: null      # profiles never expire
   weather_ttl_s: 3600      # live weather, about 1 hour per grid cell
-  normals_ttl_s: 86400     # normals depend on today's date
+  normals_ttl_s: 86400     # normals and the normal bias depend on today's date
   response_ttl_s: 3600     # assembled /api/risk responses

@@ -20,10 +20,10 @@
   ],
   "upstream_reachable": true,
   "cache": {
-    "profile": 16,
-    "normals": 16,
-    "weather": 16,
-    "risk": 16,
-    "explain": 8
+    "profile": 6,
+    "normals": 6,
+    "weather": 6,
+    "risk": 0,
+    "explain": 0
   }
 }

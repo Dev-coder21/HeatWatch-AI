@@ -15,23 +15,25 @@
   "issued_date": "2026-10-04",
   "forecast_date": "2026-10-05",
   "prediction": {
-    "predicted_tmax": 36.7,
-    "raw_forecast_tmax": 36.2,
-    "normal_tmax": 30.8,
-    "departure": 5.9,
-    "heatwave_probability": 0.01,
+    "predicted_tmax": 35.6,
+    "raw_forecast_tmax": 36.3,
+    "normal_tmax": 31.7,
+    "archive_normal_tmax": 29.8,
+    "normal_bias_correction_c": 1.88,
+    "departure": 3.9,
+    "heatwave_probability": 0.11,
     "model_severity": "No Heatwave",
     "imd_rule_severity": "No Heatwave",
     "imd_rule": "none",
     "severity": "No Heatwave",
     "consecutive_heatwave_days": 0,
     "humidity": 63.0,
-    "risk_score": 40.05,
-    "risk_category": "High",
+    "risk_score": 32.19,
+    "risk_category": "Moderate",
     "risk_components": {
-      "temperature": 46.87,
-      "heatwave_probability": 1.0,
-      "anomaly": 90.88,
+      "temperature": 36.05,
+      "heatwave_probability": 11.04,
+      "anomaly": 60.69,
       "persistence": 0.0,
       "humidity": 57.5
     },
@@ -42,135 +44,137 @@
     ]
   },
   "advisory": {
-    "level": "high",
-    "general": "Elevated heat risk. Stay hydrated, limit strenuous outdoor activity and take regular breaks in shade or cool areas.",
+    "level": "moderate",
+    "general": "Moderate heat risk. Stay hydrated and take sensible precautions during prolonged outdoor activity.",
     "audiences": {
-      "outdoor_workers": "Schedule heavy work for early morning or evening, take shaded rest breaks every hour and work in pairs.",
-      "elderly": "Stay indoors during the hottest hours, use fans or cooling, and have someone check on you daily.",
-      "children": "Limit outdoor play to mornings and evenings and never leave children in parked vehicles."
+      "outdoor_workers": "Drink water every 20 minutes even if not thirsty, and wear light, loose clothing and a head covering.",
+      "elderly": "Keep drinking fluids through the day and stay in well-ventilated rooms in the afternoon.",
+      "children": "Make sure children drink water regularly and wear hats outdoors."
     },
-    "context": []
+    "context": [
+      "Estimated heatwave probability is 11%."
+    ]
   },
   "today": {
     "date": "2026-10-04",
-    "tmax": 37.3,
-    "normal_tmax": 30.6,
-    "departure": 6.7,
-    "consecutive_heatwave_days": 4
+    "tmax": 36.8,
+    "normal_tmax": 31.5,
+    "departure": 5.3,
+    "consecutive_heatwave_days": 0
   },
   "recent_days": [
     {
       "date": "2026-09-27",
       "tmax": 32.0,
       "tmin": 24.8,
-      "normal_tmax": 29.4,
-      "departure": 2.6,
+      "normal_tmax": 30.6,
+      "departure": 1.4,
       "imd_rule_severity": "No Heatwave"
     },
     {
       "date": "2026-09-28",
       "tmax": 32.0,
       "tmin": 24.9,
-      "normal_tmax": 29.6,
-      "departure": 2.4,
+      "normal_tmax": 30.7,
+      "departure": 1.3,
       "imd_rule_severity": "No Heatwave"
     },
     {
       "date": "2026-09-29",
       "tmax": 33.5,
       "tmin": 25.0,
-      "normal_tmax": 29.8,
-      "departure": 3.7,
+      "normal_tmax": 30.9,
+      "departure": 2.6,
       "imd_rule_severity": "No Heatwave"
     },
     {
       "date": "2026-09-30",
       "tmax": 34.2,
       "tmin": 25.4,
-      "normal_tmax": 30.0,
-      "departure": 4.2,
+      "normal_tmax": 31.0,
+      "departure": 3.2,
       "imd_rule_severity": "No Heatwave"
     },
     {
       "date": "2026-10-01",
       "tmax": 37.2,
       "tmin": 24.9,
-      "normal_tmax": 30.1,
-      "departure": 7.1,
-      "imd_rule_severity": "Severe Heatwave"
+      "normal_tmax": 31.2,
+      "departure": 6.0,
+      "imd_rule_severity": "Heatwave"
     },
     {
       "date": "2026-10-02",
       "tmax": 37.2,
       "tmin": 27.0,
-      "normal_tmax": 30.3,
-      "departure": 6.9,
-      "imd_rule_severity": "Severe Heatwave"
+      "normal_tmax": 31.3,
+      "departure": 5.9,
+      "imd_rule_severity": "Heatwave"
     },
     {
       "date": "2026-10-03",
       "tmax": 38.8,
       "tmin": 26.0,
-      "normal_tmax": 30.5,
-      "departure": 8.3,
+      "normal_tmax": 31.4,
+      "departure": 7.4,
       "imd_rule_severity": "Severe Heatwave"
     },
     {
       "date": "2026-10-04",
-      "tmax": 37.3,
+      "tmax": 36.8,
       "tmin": 24.4,
-      "normal_tmax": 30.6,
-      "departure": 6.7,
-      "imd_rule_severity": "Severe Heatwave"
+      "normal_tmax": 31.5,
+      "departure": 5.3,
+      "imd_rule_severity": "No Heatwave"
     }
   ],
   "outlook": [
     {
       "date": "2026-10-05",
-      "forecast_tmax": 36.2,
-      "forecast_tmin": 24.3,
-      "normal_tmax": 30.8,
-      "departure": 5.4,
+      "forecast_tmax": 36.3,
+      "forecast_tmin": 24.5,
+      "normal_tmax": 31.7,
+      "departure": 4.6,
       "humidity": 63.0,
       "precipitation_mm": 0.4,
       "imd_rule_severity": "No Heatwave"
     },
     {
       "date": "2026-10-06",
-      "forecast_tmax": 35.4,
-      "forecast_tmin": 23.9,
-      "normal_tmax": 31.0,
-      "departure": 4.4,
-      "humidity": 74.0,
+      "forecast_tmax": 35.0,
+      "forecast_tmin": 24.7,
+      "normal_tmax": 31.8,
+      "departure": 3.2,
+      "humidity": 72.0,
       "precipitation_mm": 0.3,
       "imd_rule_severity": "No Heatwave"
     },
     {
       "date": "2026-10-07",
-      "forecast_tmax": 37.8,
-      "forecast_tmin": 25.0,
-      "normal_tmax": 31.2,
-      "departure": 6.6,
-      "humidity": 64.0,
+      "forecast_tmax": 38.0,
+      "forecast_tmin": 25.1,
+      "normal_tmax": 32.0,
+      "departure": 6.0,
+      "humidity": 63.0,
       "precipitation_mm": 0.0,
-      "imd_rule_severity": "Severe Heatwave"
+      "imd_rule_severity": "Heatwave"
     },
     {
       "date": "2026-10-08",
-      "forecast_tmax": 38.4,
-      "forecast_tmin": 26.0,
-      "normal_tmax": 31.4,
-      "departure": 7.0,
+      "forecast_tmax": 38.1,
+      "forecast_tmin": 26.3,
+      "normal_tmax": 32.1,
+      "departure": 6.0,
       "humidity": 57.0,
       "precipitation_mm": 0.9,
-      "imd_rule_severity": "Severe Heatwave"
+      "imd_rule_severity": "Heatwave"
     },
     {
       "date": "2026-10-09",
-      "forecast_tmax": 37.7,
+      "forecast_tmax": 37.9,
       "forecast_tmin": 26.4,
-      "normal_tmax": 31.6,
-      "departure": 6.1,
+      "normal_tmax": 32.2,
+      "departure": 5.7,
       "humidity": 61.0,
       "precipitation_mm": 1.2,
       "imd_rule_severity": "Heatwave"
@@ -178,9 +182,9 @@
     {
       "date": "2026-10-10",
       "forecast_tmax": 36.2,
-      "forecast_tmin": 26.3,
-      "normal_tmax": 31.7,
-      "departure": 4.5,
+      "forecast_tmin": 26.8,
+      "normal_tmax": 32.4,
+      "departure": 3.8,
       "humidity": 65.0,
       "precipitation_mm": 1.2,
       "imd_rule_severity": "No Heatwave"
@@ -189,8 +193,8 @@
       "date": "2026-10-11",
       "forecast_tmax": 36.8,
       "forecast_tmin": 26.3,
-      "normal_tmax": 31.8,
-      "departure": 5.0,
+      "normal_tmax": 32.4,
+      "departure": 4.4,
       "humidity": 54.0,
       "precipitation_mm": 0.6,
       "imd_rule_severity": "No Heatwave"
@@ -198,8 +202,10 @@
   ],
   "data": {
     "stale": false,
-    "weather_age_s": 0,
-    "source": "Open-Meteo forecast API (past_days + forecast); normals from the Open-Meteo archive (ERA5) for the last 10 complete years; all values lapse-corrected by Open-Meteo to elevation_m",
+    "weather_age_s": 177,
+    "normal_bias_correction_c": 1.88,
+    "normal_bias_overlap_days": 9,
+    "source": "Open-Meteo forecast API (past_days + forecast); normals from the Open-Meteo ERA5 archive (era5_seamless) for the last 10 complete years, shifted by the forecast-vs-archive bias measured on overlapping recent days; all values lapse-corrected by Open-Meteo to elevation_m",
     "grid_resolution": "~11 km cache cell; underlying weather models ~9-25 km"
   }
 }

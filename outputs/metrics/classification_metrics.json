@@ -1,42 +1,42 @@
 {
     "heatwave_classifier": {
-        "model": "RandomForestClassifier",
+        "model": "RandomForestClassifier(min_samples_leaf=5, max_depth=12)",
         "random_state": 42,
         "validation": {
             "positives": 4,
-            "pr_auc": 0.08001223091976517,
-            "brier": 0.0026815220700152206,
-            "precision": 0.0,
-            "recall": 0.0,
-            "f1": 0.0,
-            "roc_auc": 0.8428747940691927,
+            "pr_auc": 0.13318736693349695,
+            "brier": 0.00342593832079799,
+            "precision": 0.2,
+            "recall": 0.25,
+            "f1": 0.2222222222222222,
+            "roc_auc": 0.9513316858868753,
             "confusion_matrix": [
                 [
-                    1819,
-                    2
+                    1817,
+                    4
                 ],
                 [
-                    4,
-                    0
+                    3,
+                    1
                 ]
             ]
         },
         "test": {
             "positives": 32,
-            "pr_auc": 0.4816517939965529,
-            "brier": 0.012648012176560123,
-            "precision": 0.8181818181818182,
-            "recall": 0.28125,
-            "f1": 0.4186046511627907,
-            "roc_auc": 0.9286984104852203,
+            "pr_auc": 0.6545730787078855,
+            "brier": 0.01211104179136712,
+            "precision": 0.5897435897435898,
+            "recall": 0.71875,
+            "f1": 0.647887323943662,
+            "roc_auc": 0.9639047685443392,
             "confusion_matrix": [
                 [
-                    1791,
-                    2
+                    1777,
+                    16
                 ],
                 [
-                    23,
-                    9
+                    9,
+                    23
                 ]
             ]
         }

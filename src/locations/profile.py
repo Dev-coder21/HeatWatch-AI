@@ -9,7 +9,7 @@ import time
 from src.config import project_path, settings
 from src.locations.geo import distance_to_coast_km, snap_to_grid
 from src.locations.geocode import check_in_india, reverse
-from src.locations.normals import compute_normals
+from src.locations.normals import compute_normals, normal_bias
 from src.locations.terrain import terrain_type
 from src.openmeteo import get_json
 
@@ -115,3 +115,17 @@ def get_normals(profile, today=None, store=None, compute=None):
     values = compute(profile["lat"], profile["lon"], profile["elevation_m"], today=today)
     store.set("normals", key, values)
     return values
+
+
+def get_normal_bias(profile, forecast_past, today=None, store=None, compute=None):
+    """Forecast-vs-archive bias for the profile's cell; cached per cell and date."""
+    store = store or cache()
+    today = today or dt.date.today()
+    key = f"{profile['grid_key']}|{today.isoformat()}"
+    cached, _ = store.get("bias", key, ttl=settings()["cache"]["normals_ttl_s"])
+    if cached is not None:
+        return cached
+    compute = compute or normal_bias
+    value = compute(profile["lat"], profile["lon"], profile["elevation_m"], forecast_past, today=today)
+    store.set("bias", key, value)
+    return value
