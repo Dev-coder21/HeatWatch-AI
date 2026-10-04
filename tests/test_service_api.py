@@ -166,7 +166,8 @@ def test_normal_bias_needs_enough_overlap_and_is_clipped():
     def cold(lat, lon, elevation, start, end):
         return pd.Series(30.0, index=pd.date_range(start, end))
 
-    assert normal_bias(0, 0, 0, forecast, today=TODAY, fetch=cold)["bias_c"] == 5.0
+    # Clamped to +/-2.5 C so a noisy 9-day window can't swing the normal too far.
+    assert normal_bias(0, 0, 0, forecast, today=TODAY, fetch=cold)["bias_c"] == 2.5
 
 
 # -----------------------------------
@@ -210,6 +211,11 @@ def test_assess_shape_and_imd_labels(mocked):
     assert all(day["imd_rule_severity"] != "No Heatwave" for day in result["outlook"])
     # The model regresses towards persistence, so tomorrow may sit just under the rule.
     assert result["advisory"]["level"] in {"high", "very_high", "extreme"}
+    # Outlook confidence and alert wording.
+    assert [d["confidence"] for d in result["outlook"]] == ["model"] + ["forecast"] * 2 + ["low"] * 4
+    assert result["outlook"][0]["alert_label"] == (None if p["severity"] == "No Heatwave" else p["severity"])
+    for day in result["outlook"][1:]:
+        assert day["alert_label"] in {"Possible heatwave", "Possible severe heatwave"}
 
 
 @needs_models
@@ -297,3 +303,20 @@ def test_api_featured(client):
     places = response.json()["places"]
     assert len(places) == len(pd.read_csv(project_path("config/locations.csv")))
     assert all(p["risk_score"] is not None for p in places)
+
+
+@pytest.mark.parametrize(
+    "index, rule, day1, expected",
+    [
+        (0, "No Heatwave", "No Heatwave", {"confidence": "model", "alert_label": None}),
+        (0, "No Heatwave", "Severe Heatwave", {"confidence": "model", "alert_label": "Severe Heatwave"}),
+        (1, "Heatwave", "No Heatwave", {"confidence": "forecast", "alert_label": "Possible heatwave"}),
+        (2, "Severe Heatwave", "No Heatwave", {"confidence": "forecast", "alert_label": "Possible severe heatwave"}),
+        (3, "Heatwave", "Heatwave", {"confidence": "low", "alert_label": "Possible heatwave"}),
+        (6, "No Heatwave", "Heatwave", {"confidence": "low", "alert_label": None}),
+    ],
+)
+def test_outlook_alert(index, rule, day1, expected):
+    from src.service.assess import outlook_alert
+
+    assert outlook_alert(index, rule, day1) == expected

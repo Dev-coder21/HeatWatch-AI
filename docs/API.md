@@ -137,7 +137,7 @@ and a 7-day outlook.
   - `archive_normal_tmax`: mean ERA5 (`era5_seamless`) Tmax for this calendar window over the
     last 10 complete years.
   - `normal_bias_correction_c`: mean (forecast − ERA5) Tmax over the recent days where both
-    exist (~9 of the last 14), clipped to ±5 °C. It puts the archive normal on the same
+    exist (~9 of the last 14), clipped to ±2.5 °C so a noisy window can't swing the normal too far. It puts the archive normal on the same
     footing as the forecast, so departures aren't inflated by the gap between the two
     sources. 0 if fewer than 3 overlapping days.
   - `departure` (= predicted − normal).
@@ -158,7 +158,14 @@ and a 7-day outlook.
   `departure`, `imd_rule_severity`.
 - `outlook[]`: 7 entries (tomorrow … +7 days) of the **raw Open-Meteo forecast** checked
   against IMD rules: `forecast_tmax`, `forecast_tmin`, `normal_tmax`, `departure`,
-  `humidity`, `precipitation_mm`, `imd_rule_severity`. The ML models only predict tomorrow.
+  `humidity`, `precipitation_mm`, `imd_rule_severity`, `confidence`, `alert_label`. The ML
+  models only predict tomorrow.
+  - `confidence`: `"model"` for day 1 (ML + IMD rules), `"forecast"` for days 2–3, `"low"`
+    for days 4–7.
+  - `alert_label`: what to show the user. Day 1 uses the combined `prediction.severity`:
+    `"Heatwave"` or `"Severe Heatwave"`. Days 2–7 that meet IMD criteria on the raw forecast
+    get `"Possible heatwave"` or `"Possible severe heatwave"`. `null` when there's no alert.
+    `imd_rule_severity` keeps the raw rule result for every day.
 - `data`: `stale`, `weather_age_s`, `normal_bias_correction_c` (same value as in
   `prediction`), `normal_bias_overlap_days`, `source`, `grid_resolution`.
 
@@ -304,7 +311,9 @@ All `normal_tmax` values in `today`, `recent_days` and `outlook` include the bia
       "departure": 1.2,
       "humidity": 54.0,
       "precipitation_mm": 0.0,
-      "imd_rule_severity": "No Heatwave"
+      "imd_rule_severity": "No Heatwave",
+      "confidence": "model",
+      "alert_label": null
     },
     {
       "date": "2026-10-06",
@@ -314,7 +323,9 @@ All `normal_tmax` values in `today`, `recent_days` and `outlook` include the bia
       "departure": 0.9,
       "humidity": 66.0,
       "precipitation_mm": 0.0,
-      "imd_rule_severity": "No Heatwave"
+      "imd_rule_severity": "No Heatwave",
+      "confidence": "forecast",
+      "alert_label": null
     },
     {
       "date": "2026-10-07",
@@ -324,7 +335,9 @@ All `normal_tmax` values in `today`, `recent_days` and `outlook` include the bia
       "departure": 0.5,
       "humidity": 69.0,
       "precipitation_mm": 0.0,
-      "imd_rule_severity": "No Heatwave"
+      "imd_rule_severity": "No Heatwave",
+      "confidence": "forecast",
+      "alert_label": null
     },
     {
       "date": "2026-10-08",
@@ -334,7 +347,9 @@ All `normal_tmax` values in `today`, `recent_days` and `outlook` include the bia
       "departure": -0.3,
       "humidity": 71.0,
       "precipitation_mm": 1.2,
-      "imd_rule_severity": "No Heatwave"
+      "imd_rule_severity": "No Heatwave",
+      "confidence": "low",
+      "alert_label": null
     },
     {
       "date": "2026-10-09",
@@ -344,7 +359,9 @@ All `normal_tmax` values in `today`, `recent_days` and `outlook` include the bia
       "departure": -2.3,
       "humidity": 73.0,
       "precipitation_mm": 1.5,
-      "imd_rule_severity": "No Heatwave"
+      "imd_rule_severity": "No Heatwave",
+      "confidence": "low",
+      "alert_label": null
     },
     {
       "date": "2026-10-10",
@@ -354,7 +371,9 @@ All `normal_tmax` values in `today`, `recent_days` and `outlook` include the bia
       "departure": -3.4,
       "humidity": 73.0,
       "precipitation_mm": 0.0,
-      "imd_rule_severity": "No Heatwave"
+      "imd_rule_severity": "No Heatwave",
+      "confidence": "low",
+      "alert_label": null
     },
     {
       "date": "2026-10-11",
@@ -364,12 +383,14 @@ All `normal_tmax` values in `today`, `recent_days` and `outlook` include the bia
       "departure": -2.3,
       "humidity": 70.0,
       "precipitation_mm": 0.0,
-      "imd_rule_severity": "No Heatwave"
+      "imd_rule_severity": "No Heatwave",
+      "confidence": "low",
+      "alert_label": null
     }
   ],
   "data": {
     "stale": false,
-    "weather_age_s": 153,
+    "weather_age_s": 0,
     "normal_bias_correction_c": 1.37,
     "normal_bias_overlap_days": 9,
     "source": "Open-Meteo forecast API (past_days + forecast); normals from the Open-Meteo ERA5 archive (era5_seamless) for the last 10 complete years, shifted by the forecast-vs-archive bias measured on overlapping recent days; all values lapse-corrected by Open-Meteo to elevation_m",
@@ -855,9 +876,9 @@ Tomorrow's headline numbers for the featured places in `config/locations.csv`. E
   ],
   "upstream_reachable": true,
   "cache": {
-    "profile": 6,
-    "normals": 6,
-    "weather": 6,
+    "profile": 0,
+    "normals": 0,
+    "weather": 0,
     "risk": 0,
     "explain": 0
   }

@@ -38,7 +38,7 @@ normals:
   forecast_days_needed: 7
   # Normal bias correction: mean(forecast past days - archive) Tmax over overlapping days.
   bias_min_overlap_days: 3
-  bias_max_abs_c: 5.0
+  bias_max_abs_c: 2.5
 
 cache:
   dir: data/cache

@@ -118,6 +118,10 @@ class OutlookDay(BaseModel):
     humidity: Optional[float] = None
     precipitation_mm: Optional[float] = None
     imd_rule_severity: Severity
+    confidence: Literal["model", "forecast", "low"]
+    alert_label: Optional[
+        Literal["Heatwave", "Severe Heatwave", "Possible heatwave", "Possible severe heatwave"]
+    ] = None
 
 
 class DataInfo(BaseModel):

@@ -49,6 +49,20 @@ def _r(value, digits=1):
     return None if value is None or not np.isfinite(value) else round(float(value), digits)
 
 
+def outlook_alert(index, rule_severity, day1_severity):
+    """Confidence and alert wording for outlook day index+1.
+
+    Day 1 combines the ML models and IMD rules (definitive labels). Days 2-7 are the
+    raw forecast checked against IMD rules, so alerts are worded as "Possible ...".
+    """
+    if index == 0:
+        severity = day1_severity
+        return {"confidence": "model", "alert_label": None if severity == "No Heatwave" else severity}
+    confidence = "forecast" if index <= 2 else "low"
+    labels = {"Heatwave": "Possible heatwave", "Severe Heatwave": "Possible severe heatwave"}
+    return {"confidence": confidence, "alert_label": labels.get(rule_severity)}
+
+
 def build_features(weather, normals, today_index):
     """Feature row for 'today' in the exact form the models were trained on."""
     w = pd.DataFrame(weather)
@@ -144,6 +158,7 @@ def assess(lat, lon, store=None):
     outlook_labels = classify(future["temperature_max"], future["normal_max_temp"], terrain)
     outlook = [
         {
+            **outlook_alert(i, SEVERITY_NAMES[int(label["severity"])], severity),
             "date": row["date"],
             "forecast_tmax": _r(row["temperature_max"]),
             "forecast_tmin": _r(row["temperature_min"]),
@@ -153,7 +168,7 @@ def assess(lat, lon, store=None):
             "precipitation_mm": _r(row["precipitation"]),
             "imd_rule_severity": SEVERITY_NAMES[int(label["severity"])],
         }
-        for (_, row), (_, label) in zip(future.iterrows(), outlook_labels.iterrows())
+        for i, ((_, row), (_, label)) in enumerate(zip(future.iterrows(), outlook_labels.iterrows()))
     ]
     recent = [
         {

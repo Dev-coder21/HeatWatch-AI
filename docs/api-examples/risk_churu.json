@@ -137,7 +137,9 @@
       "departure": 3.8,
       "humidity": 36.0,
       "precipitation_mm": 0.0,
-      "imd_rule_severity": "No Heatwave"
+      "imd_rule_severity": "No Heatwave",
+      "confidence": "model",
+      "alert_label": null
     },
     {
       "date": "2026-10-06",
@@ -147,7 +149,9 @@
       "departure": 3.8,
       "humidity": 36.0,
       "precipitation_mm": 0.0,
-      "imd_rule_severity": "No Heatwave"
+      "imd_rule_severity": "No Heatwave",
+      "confidence": "forecast",
+      "alert_label": null
     },
     {
       "date": "2026-10-07",
@@ -157,7 +161,9 @@
       "departure": 3.0,
       "humidity": 37.0,
       "precipitation_mm": 0.0,
-      "imd_rule_severity": "No Heatwave"
+      "imd_rule_severity": "No Heatwave",
+      "confidence": "forecast",
+      "alert_label": null
     },
     {
       "date": "2026-10-08",
@@ -167,7 +173,9 @@
       "departure": 3.0,
       "humidity": 39.0,
       "precipitation_mm": 0.0,
-      "imd_rule_severity": "No Heatwave"
+      "imd_rule_severity": "No Heatwave",
+      "confidence": "low",
+      "alert_label": null
     },
     {
       "date": "2026-10-09",
@@ -177,7 +185,9 @@
       "departure": 3.2,
       "humidity": 42.0,
       "precipitation_mm": 0.0,
-      "imd_rule_severity": "No Heatwave"
+      "imd_rule_severity": "No Heatwave",
+      "confidence": "low",
+      "alert_label": null
     },
     {
       "date": "2026-10-10",
@@ -187,7 +197,9 @@
       "departure": 1.7,
       "humidity": 40.0,
       "precipitation_mm": 0.0,
-      "imd_rule_severity": "No Heatwave"
+      "imd_rule_severity": "No Heatwave",
+      "confidence": "low",
+      "alert_label": null
     },
     {
       "date": "2026-10-11",
@@ -197,12 +209,14 @@
       "departure": 0.4,
       "humidity": 49.0,
       "precipitation_mm": 0.0,
-      "imd_rule_severity": "No Heatwave"
+      "imd_rule_severity": "No Heatwave",
+      "confidence": "low",
+      "alert_label": null
     }
   ],
   "data": {
     "stale": false,
-    "weather_age_s": 146,
+    "weather_age_s": 0,
     "normal_bias_correction_c": -2.07,
     "normal_bias_overlap_days": 9,
     "source": "Open-Meteo forecast API (past_days + forecast); normals from the Open-Meteo ERA5 archive (era5_seamless) for the last 10 complete years, shifted by the forecast-vs-archive bias measured on overlapping recent days; all values lapse-corrected by Open-Meteo to elevation_m",

@@ -135,7 +135,9 @@
       "departure": -0.8,
       "humidity": 85.0,
       "precipitation_mm": 0.8,
-      "imd_rule_severity": "No Heatwave"
+      "imd_rule_severity": "No Heatwave",
+      "confidence": "model",
+      "alert_label": null
     },
     {
       "date": "2026-10-06",
@@ -145,7 +147,9 @@
       "departure": 1.1,
       "humidity": 84.0,
       "precipitation_mm": 0.4,
-      "imd_rule_severity": "No Heatwave"
+      "imd_rule_severity": "No Heatwave",
+      "confidence": "forecast",
+      "alert_label": null
     },
     {
       "date": "2026-10-07",
@@ -155,7 +159,9 @@
       "departure": 1.6,
       "humidity": 81.0,
       "precipitation_mm": 1.0,
-      "imd_rule_severity": "No Heatwave"
+      "imd_rule_severity": "No Heatwave",
+      "confidence": "forecast",
+      "alert_label": null
     },
     {
       "date": "2026-10-08",
@@ -165,7 +171,9 @@
       "departure": -0.8,
       "humidity": 88.0,
       "precipitation_mm": 7.5,
-      "imd_rule_severity": "No Heatwave"
+      "imd_rule_severity": "No Heatwave",
+      "confidence": "low",
+      "alert_label": null
     },
     {
       "date": "2026-10-09",
@@ -175,7 +183,9 @@
       "departure": -1.4,
       "humidity": 92.0,
       "precipitation_mm": 6.0,
-      "imd_rule_severity": "No Heatwave"
+      "imd_rule_severity": "No Heatwave",
+      "confidence": "low",
+      "alert_label": null
     },
     {
       "date": "2026-10-10",
@@ -185,7 +195,9 @@
       "departure": -0.7,
       "humidity": 90.0,
       "precipitation_mm": 7.2,
-      "imd_rule_severity": "No Heatwave"
+      "imd_rule_severity": "No Heatwave",
+      "confidence": "low",
+      "alert_label": null
     },
     {
       "date": "2026-10-11",
@@ -195,7 +207,9 @@
       "departure": 0.3,
       "humidity": 85.0,
       "precipitation_mm": 0.0,
-      "imd_rule_severity": "No Heatwave"
+      "imd_rule_severity": "No Heatwave",
+      "confidence": "low",
+      "alert_label": null
     }
   ],
   "data": {
