@@ -87,3 +87,4 @@ websockets==16.1.1
 xyzservices==2026.9.1
 shapely==2.1.2
 httpx2==2.13.1
+pytest==9.1.1
