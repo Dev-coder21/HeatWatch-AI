@@ -171,7 +171,7 @@ $$\text{CHRS} = 0.40 \cdot S_{\text{temp}} + 0.25 \cdot S_{\text{prob}} + 0.20 \
 ## Project Structure
 
 ```plaintext
-heatwave-intelligence/
+HeatWatch-AI/
 ├── backend/
 │   └── main.py                     # FastAPI REST server & endpoint controllers
 ├── config/
@@ -243,8 +243,8 @@ heatwave-intelligence/
 
 ```bash
 # Clone the repository
-git clone https://github.com/<your-username>/heatwave-intelligence.git
-cd heatwave-intelligence
+git clone https://github.com/Dev-coder21/HeatWatch-AI.git
+cd HeatWatch-AI
 
 # Create and activate Python virtual environment
 python3 -m venv .venv
