@@ -87,3 +87,7 @@ uvicorn==0.52.4
 wcwidth==0.8.3
 websockets==16.1.1
 xyzservices==2026.9.1
+shapely==2.1.2
+cdsapi==0.7.7
+xarray==2026.9.0
+netCDF4==1.7.4

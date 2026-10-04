@@ -1,6 +1,15 @@
-location_id,city,state,latitude,longitude,region_type
-PUNE_01,Pune,Maharashtra,18.5204,73.8567,plains
-MUM_01,Mumbai,Maharashtra,19.0760,72.8777,coastal
-DEL_01,Delhi,Delhi,28.6139,77.2090,plains
-BENG_01,Bengaluru,Karnataka,12.9716,77.5946,plains
-SHIM_01,Shimla,Himachal Pradesh,31.1048,77.1734,hilly
+slug,name,state,latitude,longitude
+pune,Pune,Maharashtra,18.5204,73.8567
+mumbai,Mumbai,Maharashtra,19.0760,72.8777
+delhi,Delhi,Delhi,28.6139,77.2090
+bengaluru,Bengaluru,Karnataka,12.9716,77.5946
+shimla,Shimla,Himachal Pradesh,31.1048,77.1734
+jaisalmer,Jaisalmer,Rajasthan,26.9157,70.9083
+ahmedabad,Ahmedabad,Gujarat,23.0225,72.5714
+nagpur,Nagpur,Maharashtra,21.1458,79.0882
+lucknow,Lucknow,Uttar Pradesh,26.8467,80.9462
+kolkata,Kolkata,West Bengal,22.5726,88.3639
+chennai,Chennai,Tamil Nadu,13.0827,80.2707
+hyderabad,Hyderabad,Telangana,17.3850,78.4867
+guwahati,Guwahati,Assam,26.1445,91.7362
+port-blair,Port Blair,Andaman and Nicobar Islands,11.6234,92.7265

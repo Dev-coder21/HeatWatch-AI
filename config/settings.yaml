@@ -1,0 +1,43 @@
+# Runtime settings for HeatWatch AI.
+# Heatwave thresholds and risk weights live in thresholds.yaml.
+
+api:
+  geocoding_url: https://geocoding-api.open-meteo.com/v1/search
+  elevation_url: https://api.open-meteo.com/v1/elevation
+  archive_url: https://archive-api.open-meteo.com/v1/archive
+  forecast_url: https://api.open-meteo.com/v1/forecast
+  historical_forecast_url: https://historical-forecast-api.open-meteo.com/v1/forecast
+  previous_runs_url: https://previous-runs-api.open-meteo.com/v1/forecast
+  timezone: Asia/Kolkata
+  timeout_s: 30
+  max_retries: 4
+  # Pause between calls in bulk download scripts (free tier: 600/min, 5k/h, 10k/day).
+  throttle_s: 1.0
+  # Weather model used for forecast inputs, in training and live, so they match.
+  forecast_model: gfs_seamless
+  baseline_models: [ecmwf_ifs025]
+
+terrain:
+  hilly_min_elevation_m: 1000
+  coastal_max_distance_km: 50
+
+geo:
+  # Profiles are cached by coordinates rounded to this step (ERA5-Land grid).
+  grid_step_deg: 0.1
+  india_boundary_file: data/static/india_boundary.geojson
+  coastline_file: data/static/india_coastline.geojson
+  # Points within this distance of the boundary are still accepted (islands, coastal cells).
+  boundary_buffer_km: 5
+
+normals:
+  period: [1991, 2020]
+  grid_file: data/static/normals_tmax_1991_2020.npz
+  harmonics: 3
+  # Largest distance to look for the nearest valid land cell.
+  max_fallback_km: 60
+
+cache:
+  dir: data/cache
+  profile_ttl_s: null      # profiles never expire
+  weather_ttl_s: 3600      # live weather, about 1 hour per grid cell
+  national_ttl_s: 3600

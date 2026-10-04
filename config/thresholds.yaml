@@ -3,6 +3,9 @@ heatwave:
     temperature_threshold_c: 40.0
     departure_threshold_c: 4.5
     severe_departure_threshold_c: 6.5
+    # IMD absolute criterion (plains only): heatwave regardless of departure.
+    absolute_heatwave_c: 45.0
+    absolute_severe_c: 47.0
 
   hilly:
     temperature_threshold_c: 30.0
