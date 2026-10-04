@@ -1,0 +1,95 @@
+{
+  "query": "Jodhpur",
+  "results": [
+    {
+      "name": "Jodhpur",
+      "district": "Jodhpur",
+      "state": "Rajasthan",
+      "lat": 26.2684,
+      "lon": 73.0059,
+      "elevation": 237.0,
+      "population": 1056191
+    },
+    {
+      "name": "Jodhpur",
+      "district": "Jamnagar",
+      "state": "Gujarat",
+      "lat": 21.9017,
+      "lon": 70.0327,
+      "elevation": 99.0,
+      "population": 47329
+    },
+    {
+      "name": "Jodhpur",
+      "district": "Panna",
+      "state": "Madhya Pradesh",
+      "lat": 24.073,
+      "lon": 79.8643,
+      "elevation": 491.0,
+      "population": null
+    },
+    {
+      "name": "Jodhpur",
+      "district": null,
+      "state": "Punjab",
+      "lat": 30.0953,
+      "lon": 76.6192,
+      "elevation": 250.0,
+      "population": null
+    },
+    {
+      "name": "Jodhpur",
+      "district": "Fazilka",
+      "state": "Punjab",
+      "lat": 30.1324,
+      "lon": 74.3752,
+      "elevation": 193.0,
+      "population": null
+    },
+    {
+      "name": "Jodhpur",
+      "district": "Alwar",
+      "state": "Rajasthan",
+      "lat": 27.2944,
+      "lon": 76.7503,
+      "elevation": 260.0,
+      "population": null
+    },
+    {
+      "name": "Jodhpur",
+      "district": "Karauli",
+      "state": "Rajasthan",
+      "lat": 26.9111,
+      "lon": 76.9053,
+      "elevation": 236.0,
+      "population": null
+    },
+    {
+      "name": "Jodhpur",
+      "district": "Udaipur District",
+      "state": "Rajasthan",
+      "lat": 24.4229,
+      "lon": 73.8355,
+      "elevation": 434.0,
+      "population": null
+    },
+    {
+      "name": "Jodhpur",
+      "district": "Barnala",
+      "state": "Punjab",
+      "lat": 30.3799,
+      "lon": 75.4556,
+      "elevation": 228.0,
+      "population": null
+    },
+    {
+      "name": "Jodhpur",
+      "district": "Rupnagar District",
+      "state": "Punjab",
+      "lat": 30.9439,
+      "lon": 76.6437,
+      "elevation": 331.0,
+      "population": null
+    }
+  ]
+}

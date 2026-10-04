@@ -10,6 +10,8 @@ from sklearn.metrics import (
     recall_score,
     f1_score,
     roc_auc_score,
+    average_precision_score,
+    brier_score_loss,
     confusion_matrix,
 )
 
@@ -64,9 +66,9 @@ FEATURE_COLUMNS = [
     "normal_max_temp",
     "month",
     "day_of_year",
-    "latitude",
-    "longitude",
 ]
+# latitude/longitude were removed: with only 5 training cities they let the
+# models memorise city identity instead of learning heat behaviour.
 
 
 # -----------------------------------
@@ -198,7 +200,17 @@ def evaluate_heatwave(
         predictions
     ).tolist()
 
+    # Rare-class metrics: PR-AUC and Brier score are more honest than accuracy.
+    pr_auc = (
+        average_precision_score(y, probabilities)
+        if y.sum() > 0 else None
+    )
+    brier = brier_score_loss(y, probabilities)
+
     return {
+        "positives": int(y.sum()),
+        "pr_auc": pr_auc,
+        "brier": brier,
         "precision": precision,
         "recall": recall,
         "f1": f1,

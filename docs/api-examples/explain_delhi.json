@@ -1,0 +1,189 @@
+{
+  "location": {
+    "name": "New Delhi",
+    "grid_key": "28.60,77.20"
+  },
+  "issued_date": "2026-10-04",
+  "forecast_date": "2026-10-05",
+  "stale": false,
+  "predicted_tmax": {
+    "base_value": 27.3051,
+    "prediction": 33.3463,
+    "contributions": [
+      {
+        "feature": "temp_max_lag_1",
+        "label": "Yesterday's max temperature",
+        "value": 35.5,
+        "shap": 2.4956
+      },
+      {
+        "feature": "temp_max_rolling_3",
+        "label": "3-day average max temperature",
+        "value": 34.47,
+        "shap": 1.4835
+      },
+      {
+        "feature": "temp_max_rolling_7",
+        "label": "7-day average max temperature",
+        "value": 31.93,
+        "shap": 1.333
+      },
+      {
+        "feature": "departure",
+        "label": "Today's departure from normal",
+        "value": 1.76,
+        "shap": 0.51
+      },
+      {
+        "feature": "normal_max_temp",
+        "label": "Normal max temperature",
+        "value": 32.64,
+        "shap": 0.4267
+      },
+      {
+        "feature": "day_of_year",
+        "label": "Day of year",
+        "value": 277.0,
+        "shap": -0.0697
+      },
+      {
+        "feature": "wind_lag_1",
+        "label": "Yesterday's max wind",
+        "value": 11.4,
+        "shap": -0.0394
+      },
+      {
+        "feature": "temp_trend_3d",
+        "label": "3-day temperature trend",
+        "value": 2.1,
+        "shap": -0.0327
+      },
+      {
+        "feature": "temp_min_lag_1",
+        "label": "Yesterday's min temperature",
+        "value": 24.3,
+        "shap": -0.0302
+      },
+      {
+        "feature": "temp_max_lag_3",
+        "label": "Max temperature 3 days ago",
+        "value": 33.4,
+        "shap": -0.025
+      },
+      {
+        "feature": "humidity_lag_1",
+        "label": "Yesterday's humidity",
+        "value": 56.0,
+        "shap": -0.0139
+      },
+      {
+        "feature": "precip_3d",
+        "label": "Rain in the last 3 days",
+        "value": 0.0,
+        "shap": 0.007
+      },
+      {
+        "feature": "month",
+        "label": "Month",
+        "value": 10.0,
+        "shap": -0.0021
+      },
+      {
+        "feature": "temp_max_lag_2",
+        "label": "Max temperature 2 days ago",
+        "value": 34.5,
+        "shap": -0.0016
+      }
+    ]
+  },
+  "heatwave_probability": {
+    "base_value": 0.4997,
+    "prediction": 0.0002,
+    "contributions": [
+      {
+        "feature": "departure",
+        "label": "Today's departure from normal",
+        "value": 1.76,
+        "shap": -0.1215
+      },
+      {
+        "feature": "temp_max_rolling_7",
+        "label": "7-day average max temperature",
+        "value": 31.93,
+        "shap": -0.0673
+      },
+      {
+        "feature": "temp_max_lag_1",
+        "label": "Yesterday's max temperature",
+        "value": 35.5,
+        "shap": -0.0627
+      },
+      {
+        "feature": "day_of_year",
+        "label": "Day of year",
+        "value": 277.0,
+        "shap": -0.0595
+      },
+      {
+        "feature": "wind_lag_1",
+        "label": "Yesterday's max wind",
+        "value": 11.4,
+        "shap": -0.0386
+      },
+      {
+        "feature": "temp_max_rolling_3",
+        "label": "3-day average max temperature",
+        "value": 34.47,
+        "shap": -0.0333
+      },
+      {
+        "feature": "humidity_lag_1",
+        "label": "Yesterday's humidity",
+        "value": 56.0,
+        "shap": -0.0299
+      },
+      {
+        "feature": "temp_max_lag_2",
+        "label": "Max temperature 2 days ago",
+        "value": 34.5,
+        "shap": -0.028
+      },
+      {
+        "feature": "temp_max_lag_3",
+        "label": "Max temperature 3 days ago",
+        "value": 33.4,
+        "shap": -0.0235
+      },
+      {
+        "feature": "month",
+        "label": "Month",
+        "value": 10.0,
+        "shap": -0.0228
+      },
+      {
+        "feature": "temp_min_lag_1",
+        "label": "Yesterday's min temperature",
+        "value": 24.3,
+        "shap": -0.0051
+      },
+      {
+        "feature": "temp_trend_3d",
+        "label": "3-day temperature trend",
+        "value": 2.1,
+        "shap": -0.0047
+      },
+      {
+        "feature": "normal_max_temp",
+        "label": "Normal max temperature",
+        "value": 32.64,
+        "shap": -0.004
+      },
+      {
+        "feature": "precip_3d",
+        "label": "Rain in the last 3 days",
+        "value": 0.0,
+        "shap": 0.0014
+      }
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "status": "ok",
+  "models_loaded": true,
+  "model_error": null,
+  "model_features": [
+    "temp_max_lag_1",
+    "temp_max_lag_2",
+    "temp_max_lag_3",
+    "temp_max_rolling_3",
+    "temp_max_rolling_7",
+    "temp_min_lag_1",
+    "humidity_lag_1",
+    "wind_lag_1",
+    "precip_3d",
+    "temp_trend_3d",
+    "departure",
+    "normal_max_temp",
+    "month",
+    "day_of_year"
+  ],
+  "upstream_reachable": true,
+  "cache": {
+    "profile": 16,
+    "normals": 16,
+    "weather": 16,
+    "risk": 16,
+    "explain": 8
+  }
+}

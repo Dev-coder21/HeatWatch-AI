@@ -2,35 +2,22 @@
 # Heatwave thresholds and risk weights live in thresholds.yaml.
 
 api:
+  past_days: 7
+  forecast_days: 7
   geocoding_url: https://geocoding-api.open-meteo.com/v1/search
   elevation_url: https://api.open-meteo.com/v1/elevation
   archive_url: https://archive-api.open-meteo.com/v1/archive
   forecast_url: https://api.open-meteo.com/v1/forecast
-  historical_forecast_url: https://historical-forecast-api.open-meteo.com/v1/forecast
-  previous_runs_url: https://previous-runs-api.open-meteo.com/v1/forecast
   timezone: Asia/Kolkata
   timeout_s: 30
   max_retries: 4
-  # Pause between calls in bulk download scripts (free tier: 600/min, 5k/h, 10k/day).
-  throttle_s: 1.0
-  # Weather model used for forecast inputs, in training and live, so they match.
-  forecast_model: gfs_seamless
-  baseline_models: [ecmwf_ifs025]
-
-lapse:
-  # Temperature change with height used to move gridded values to a point's real elevation.
-  rate_c_per_km: 6.5
-  # Open-Meteo already corrects its output to the requested point's DEM elevation at this
-  # rate (verified: elevation=0 vs 3000 m differ by 19.5 C). Kept separate so a different
-  # rate above is applied as a delta on top of Open-Meteo data.
-  openmeteo_rate_c_per_km: 6.5
 
 terrain:
   hilly_min_elevation_m: 1000
   coastal_max_distance_km: 50
 
 geo:
-  # Profiles are cached by coordinates rounded to this step (ERA5-Land grid).
+  # Profiles, normals and weather are cached per cell of this size (~11 km).
   grid_step_deg: 0.1
   india_boundary_file: data/static/india_boundary.geojson
   coastline_file: data/static/india_coastline.geojson
@@ -38,14 +25,16 @@ geo:
   boundary_buffer_km: 5
 
 normals:
-  period: [1991, 2020]
-  grid_file: data/static/normals_tmax_1991_2020.npz
-  harmonics: 3
-  # Largest distance to look for the nearest valid land cell.
-  max_fallback_km: 60
+  # On-demand normals: mean archive Tmax for the same calendar window in each of the
+  # last N complete years (one small archive call per year, ~16 call-units per city).
+  years: 10
+  window_days: 7          # +/- days around each date
+  past_days_needed: 7     # normals also needed for the observed days (persistence)
+  forecast_days_needed: 7
 
 cache:
   dir: data/cache
   profile_ttl_s: null      # profiles never expire
   weather_ttl_s: 3600      # live weather, about 1 hour per grid cell
-  national_ttl_s: 3600
+  normals_ttl_s: 86400     # normals depend on today's date
+  response_ttl_s: 3600     # assembled /api/risk responses

@@ -1,5 +1,6 @@
-"""Location profiles: elevation, terrain, coast distance, normals; cached in SQLite."""
+"""Location profiles (elevation, terrain, coast distance) and normals, cached in SQLite."""
 
+import datetime as dt
 import json
 import sqlite3
 import threading
@@ -8,7 +9,7 @@ import time
 from src.config import project_path, settings
 from src.locations.geo import distance_to_coast_km, snap_to_grid
 from src.locations.geocode import check_in_india, reverse
-from src.locations.normals import normal_coefficients
+from src.locations.normals import compute_normals
 from src.locations.terrain import terrain_type
 from src.openmeteo import get_json
 
@@ -84,9 +85,10 @@ def get_profile(lat, lon, store=None):
         return cached
 
     # Elevation is taken at the cell centre so every point in the cell shares a profile.
+    # This one value (Open-Meteo's 90 m DEM) is passed to every archive/forecast call,
+    # so normals, live weather and terrain all refer to the same height.
     elevation = fetch_elevation(cell_lat, cell_lon)
     coast_km = distance_to_coast_km(cell_lat, cell_lon)
-    normal = normal_coefficients(cell_lat, cell_lon, point_elevation_m=elevation)
     profile = {
         "grid_key": key,
         "lat": cell_lat,
@@ -94,14 +96,22 @@ def get_profile(lat, lon, store=None):
         "elevation_m": elevation,
         "distance_to_coast_km": round(coast_km, 1),
         "terrain_type": terrain_type(cell_lat, cell_lon, elevation, coast_km=coast_km),
-        "normal_coefs": normal["coefs"],
-        "normal_cell": {
-            "lat": normal["cell_lat"],
-            "lon": normal["cell_lon"],
-            "distance_km": normal["cell_distance_km"],
-            "elevation_m": normal["cell_elevation_m"],
-        },
         "place": reverse(cell_lat, cell_lon),
     }
     store.set("profile", key, profile)
     return profile
+
+
+def get_normals(profile, today=None, store=None, compute=None):
+    """Daily normals around today for the profile's cell; cached per cell and date."""
+    store = store or cache()
+    today = today or dt.date.today()
+    key = f"{profile['grid_key']}|{today.isoformat()}"
+    ttl = settings()["cache"]["normals_ttl_s"]
+    cached, _ = store.get("normals", key, ttl=ttl)
+    if cached is not None:
+        return cached
+    compute = compute or compute_normals
+    values = compute(profile["lat"], profile["lon"], profile["elevation_m"], today=today)
+    store.set("normals", key, values)
+    return values

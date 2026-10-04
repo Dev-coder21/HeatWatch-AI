@@ -6,3 +6,5 @@ __pycache__/
 .DS_Store
 data/cache/
 data/external/
+data/raw/sites/
+data/raw/download.log

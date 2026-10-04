@@ -47,9 +47,9 @@ FEATURE_COLUMNS = [
     "normal_max_temp",
     "month",
     "day_of_year",
-    "latitude",
-    "longitude",
 ]
+# latitude/longitude were removed: with only 5 training cities they let the
+# models memorise city identity instead of learning heat behaviour.
 
 
 TARGET_COLUMN = "target_temperature_max"

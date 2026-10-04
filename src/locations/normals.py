@@ -1,99 +1,67 @@
-"""Smoothed daily Tmax normals (1991-2020) from the precomputed India grid.
+"""On-demand daily Tmax normals for any point.
 
-The grid stores, for every valid ERA5-Land 0.1 degree land cell, the coefficients
-of a harmonic fit  T(doy) = a0 + sum_k [a_k cos(k w doy) + b_k sin(k w doy)],
-with w = 2 pi / 365.25. Build it with src/locations/build_normals_grid.py.
+For a reference date D, the normal for a day d is the mean archive Tmax over
+[d - window, d + window] in each of the last N complete years. One archive call
+per year covers every day from D - past_days to D + forecast_days, so a new city
+costs about N small calls (~21 Open-Meteo call-units with the defaults).
+
+All archive calls pass the profile's elevation, so Open-Meteo lapse-corrects the
+gridded values to the same height used for the live forecast.
 """
 
-from functools import lru_cache
+import datetime as dt
 
 import numpy as np
+import pandas as pd
 
-from src.config import project_path, settings
-from src.locations.geo import haversine_km
-from src.locations.lapse import cell_to_point
-
-OMEGA = 2 * np.pi / 365.25
+from src.config import settings
+from src.openmeteo import get_json
 
 
-class NormalsUnavailable(RuntimeError):
-    """No valid normals cell near the requested point."""
+def archive_tmax(lat, lon, elevation, start, end):
+    cfg = settings()["api"]
+    data = get_json(
+        cfg["archive_url"],
+        {
+            "latitude": lat,
+            "longitude": lon,
+            "elevation": elevation,
+            "start_date": start.isoformat(),
+            "end_date": end.isoformat(),
+            "daily": "temperature_2m_max",
+            "timezone": cfg["timezone"],
+        },
+    )
+    daily = data["daily"]
+    return pd.Series(daily["temperature_2m_max"], index=pd.to_datetime(daily["time"]), dtype=float)
 
 
-def harmonic_design(doy, harmonics):
-    doy = np.asarray(doy, dtype=float)
-    columns = [np.ones_like(doy)]
-    for k in range(1, harmonics + 1):
-        columns += [np.cos(k * OMEGA * doy), np.sin(k * OMEGA * doy)]
-    return np.stack(columns, axis=-1)
+def _shift_year(day, years_back):
+    try:
+        return day.replace(year=day.year - years_back)
+    except ValueError:  # 29 Feb in a non-leap year
+        return day.replace(year=day.year - years_back, day=28)
 
 
-def fit_harmonics(doy, values, harmonics):
-    """Least-squares harmonic fit. values may be (n,) or (n, cells)."""
-    design = harmonic_design(doy, harmonics)
-    coefs, *_ = np.linalg.lstsq(design, values, rcond=None)
-    return coefs.T  # (cells, 2H+1) or (2H+1,)
+def compute_normals(lat, lon, elevation, today=None, fetch=archive_tmax):
+    """Return {iso_date: normal_tmax} for today - past_days .. today + forecast_days."""
+    cfg = settings()["normals"]
+    today = today or dt.date.today()
+    window = cfg["window_days"]
+    first = today - dt.timedelta(days=cfg["past_days_needed"])
+    last = today + dt.timedelta(days=cfg["forecast_days_needed"])
+    days = [first + dt.timedelta(days=i) for i in range((last - first).days + 1)]
 
+    # Last N complete calendar years.
+    years_back = [today.year - year for year in range(today.year - cfg["years"], today.year)]
+    samples = {day: [] for day in days}
+    for back in years_back:
+        start = _shift_year(first, back) - dt.timedelta(days=window)
+        end = _shift_year(last, back) + dt.timedelta(days=window)
+        series = fetch(lat, lon, elevation, start, end)
+        for day in days:
+            centre = pd.Timestamp(_shift_year(day, back))
+            span = series.loc[centre - pd.Timedelta(days=window): centre + pd.Timedelta(days=window)]
+            samples[day].extend(span.dropna().tolist())
 
-def evaluate(coefs, doy):
-    harmonics = (len(coefs) - 1) // 2
-    return harmonic_design(doy, harmonics) @ np.asarray(coefs, dtype=float)
-
-
-@lru_cache(maxsize=1)
-def _grid():
-    path = project_path(settings()["normals"]["grid_file"])
-    if not path.exists():
-        raise NormalsUnavailable(
-            f"Normals grid {path} not found. Run python -m src.locations.build_normals_grid"
-        )
-    data = np.load(path)
-    return {
-        "lat": data["lat"].astype(float),
-        "lon": data["lon"].astype(float),
-        "coefs": data["coefs"].astype(float),
-        "elevation": data["elevation"].astype(float) if "elevation" in data else None,
-        "source": str(data["source"]) if "source" in data else "",
-    }
-
-
-def nearest_cell(lat, lon):
-    """Index and distance (km) of the nearest valid cell."""
-    grid = _grid()
-    # Pre-filter to a small box, then exact haversine.
-    box = (np.abs(grid["lat"] - lat) < 1.0) & (np.abs(grid["lon"] - lon) < 1.0)
-    candidates = np.flatnonzero(box)
-    if candidates.size == 0:
-        raise NormalsUnavailable(f"No normals cell near {lat}, {lon}")
-    distances = haversine_km(lat, lon, grid["lat"][candidates], grid["lon"][candidates])
-    best = int(np.argmin(distances))
-    distance = float(distances[best])
-    if distance > settings()["normals"]["max_fallback_km"]:
-        raise NormalsUnavailable(f"Nearest normals cell is {distance:.0f} km away")
-    return int(candidates[best]), distance
-
-
-def normal_coefficients(lat, lon, point_elevation_m=None):
-    """Harmonic coefficients for the nearest cell, lapse-corrected to the point's elevation.
-
-    A height correction is a constant shift, so only the mean term a0 changes.
-    """
-    index, distance = nearest_cell(lat, lon)
-    grid = _grid()
-    cell_elevation = float(grid["elevation"][index]) if grid["elevation"] is not None else None
-    coefs = grid["coefs"][index].copy()
-    coefs[0] = cell_to_point(coefs[0], point_elevation_m, cell_elevation)
-    return {
-        "coefs": coefs.tolist(),
-        "cell_elevation_m": cell_elevation,
-        "cell_lat": float(grid["lat"][index]),
-        "cell_lon": float(grid["lon"][index]),
-        "cell_distance_km": round(distance, 2),
-    }
-
-
-def normals(lat, lon, doy=None, point_elevation_m=None):
-    """Daily normal Tmax (deg C) for the given day(s) of year; all 366 days by default."""
-    coefs = normal_coefficients(lat, lon, point_elevation_m)["coefs"]
-    doy = np.arange(1, 367) if doy is None else doy
-    return evaluate(coefs, doy)
+    return {day.isoformat(): round(float(np.mean(v)), 2) for day, v in samples.items() if v}

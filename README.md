@@ -42,7 +42,7 @@ An end-to-end, machine learning-powered early warning system designed for **hype
 Heatwaves are among the deadliest extreme weather events driven by climate change, yet conventional meteorological advisories are frequently too broad to trigger timely, local interventions. 
 
 **HeatWatch AI** bridges this gap by:
-1. Forecasting maximum daily temperatures with high accuracy ($R^2 > 0.96$, $MAE \approx 1.0^\circ\text{C}$).
+1. Forecasting next-day maximum temperature (test MAE ≈ 1.05 °C on the 5 training cities).
 2. Applying localized, India Meteorological Department (IMD) compliant thresholds across distinct terrain categories (**Plains**, **Hilly**, and **Coastal** regions).
 3. Predicting the probability and severity of heatwaves using supervised ensemble learning.
 4. Computing a **Composite Heat Risk Index (0–100)** incorporating thermal stress, departures from normal, persistence, and relative humidity.
@@ -114,29 +114,35 @@ Heatwave definitions depend heavily on local geography. HeatWatch AI implements 
 ## Machine Learning Pipeline
 
 ### Regression: Maximum Temperature Forecast
-- **Model**: `RandomForestRegressor(n_estimators=100, random_state=42)`
+- **Model**: `RandomForestRegressor(n_estimators=300, random_state=42)`
 - **Target**: Next-day maximum temperature (`target_temperature_max`)
 - **Key Features**: 
   - Autoregressive lags: `temp_max_lag_1`, `temp_max_lag_2`, `temp_max_lag_3`
   - Rolling aggregates: `temp_max_rolling_3`, `temp_max_rolling_7`
   - Microclimate factors: `humidity_lag_1`, `wind_lag_1`, `precip_3d`, `temp_trend_3d`
-  - Climatology: `departure`, `normal_max_temp`, `month`, `day_of_year`, `latitude`, `longitude`
+  - Climatology: `departure`, `normal_max_temp`, `month`, `day_of_year`
+  - No latitude/longitude: with only 5 training cities they let the models memorise city identity.
 
 **Benchmark Performance:**
 | Dataset Split | Mean Absolute Error (MAE) | Root Mean Squared Error (RMSE) | $R^2$ Score |
 | :--- | :---: | :---: | :---: |
-| **Validation Set** | $0.96^\circ\text{C}$ | $1.33^\circ\text{C}$ | **0.9636** |
-| **Test Set** | $1.05^\circ\text{C}$ | $1.42^\circ\text{C}$ | **0.9628** |
+| **Validation (2023)** | 0.96 °C | 1.33 °C | 0.964 |
+| **Test (2024)** | 1.05 °C | 1.41 °C | 0.963 |
 
 ### Classification: Heatwave Occurrence & Severity
-- **Occurrence Model**: Binary `RandomForestClassifier` predicting whether heatwave criteria will be breached.
-  - **Test ROC-AUC**: **0.927**
-  - **Test Precision**: **0.909**
+- **Occurrence Model**: Binary `RandomForestClassifier` (class-weighted, 0.5 threshold) predicting whether heatwave criteria will be breached tomorrow. Heatwave days are rare (36 of 3,650 validation + test city-days), so accuracy and weighted F1 are misleading. Honest rare-class results:
+
+  | Split | Heatwave days | Caught (recall) | Precision | F1 | PR-AUC | Brier |
+  | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+  | Validation (2023) | 4 | 0 (0.00) | 0.00 | 0.00 | 0.08 | 0.003 |
+  | Test (2024) | 32 | 9 (0.28) | 0.82 | 0.42 | 0.48 | 0.013 |
+
+  The classifier misses most heatwave days. The service therefore also applies the IMD rules to the predicted temperature and reports the higher severity.
 - **Severity Model**: Multi-class `RandomForestClassifier` assessing degree of event:
   - `0`: Normal
   - `1`: Heatwave
   - `2`: Severe Heatwave
-  - **Weighted F1-Score**: **0.980**
+  - **Macro F1**: 0.50 (validation), 0.45 (test). Weighted F1 (0.98) mostly reflects the non-heatwave class.
 
 ### Explainable AI (SHAP)
 Using `shap.TreeExplainer`, the system computes local attribution values for every forecast:
@@ -250,26 +256,15 @@ pip install -r requirements.txt
 
 ### 2. Run the Machine Learning Pipeline
 
-Execute the pipeline to regenerate processed features, retrain models, and produce latest forecasts:
+The processed 5-city training set (2015–2024) is committed in `data/processed/`, so retraining only needs:
 
 ```bash
-# 1. Clean raw weather observations
-python -m src.data_cleaning
-
-# 2. Label heatwave occurrences using IMD terrain rules
-python -m src.heatwave_rules
-
-# 3. Compute time-series lags and rolling features
-python -m src.feature_engineering
-
-# 4. Train regression and classification models
-python -m src.train_temperature
-python -m src.train_heatwave
-
-# 5. Generate forecasts, risk scores, and SHAP explanations
-python -m src.predict
-python -m src.explain
+python src/train_temperature.py
+python src/train_heatwave.py
 ```
+
+Live predictions no longer need a batch step: the API fetches weather for any point on demand.
+`models/temperature_model.joblib` (~370 MB) is not committed, so run these two commands after cloning.
 
 ### 3. Start the FastAPI Backend
 
@@ -300,34 +295,18 @@ Open your browser at **`http://localhost:5173`** to access the HeatWatch AI Dash
 
 ## API Reference
 
+The full contract, with real example responses for every endpoint, is in [docs/API.md](docs/API.md).
+
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/` | API metadata, version, and route inventory |
-| `GET` | `/api/health` | Health check verifying model & data artifact availability |
-| `GET` | `/api/locations` | List of all monitored geographic locations |
-| `GET` | `/api/predictions` | Latest forecasts, heatwave classifications, and risk scores |
-| `GET` | `/api/hotspots` | Prioritized risk hotspots ranked by composite risk index |
-| `GET` | `/api/locations/{location_id}` | Detailed forecast, weather metrics, and advisory for a specific station |
-| `GET` | `/api/explanations` | Global feature importance rankings from SHAP |
-| `GET` | `/api/explanations/{location_id}` | Local SHAP attribution breakdown for a specific station |
+| `GET` | `/api/search?q=` | Place autocomplete, India only |
+| `GET` | `/api/reverse?lat=&lon=` | Place name for a map click |
+| `GET` | `/api/risk?lat=&lon=` | Tomorrow's prediction, risk score, advisory, 7-day outlook for any point in India |
+| `GET` | `/api/explain?lat=&lon=` | SHAP breakdown of tomorrow's predictions |
+| `GET` | `/api/featured` | Tomorrow's risk for the featured places in `config/locations.csv` |
+| `GET` | `/api/health` | Models loaded, upstream reachable, cache counts |
 
-### Sample Response: `GET /api/hotspots`
-```json
-[
-  {
-    "location_id": "DEL_01",
-    "city": "Delhi",
-    "region_type": "plains",
-    "predicted_temperature": 42.4,
-    "departure": 5.1,
-    "heatwave_predicted": true,
-    "severity": "Heatwave",
-    "risk_score": 78.4,
-    "risk_level": "Very High",
-    "alert_color": "#DC2626"
-  }
-]
-```
+Points outside India return 400. CORS origins come from `CORS_ORIGINS` in `.env` (see `.env.example`).
 
 ---
 
@@ -336,9 +315,15 @@ Open your browser at **`http://localhost:5173`** to access the HeatWatch AI Dash
 HeatWatch AI includes an automated test suite verifying dataset integrity, model persistence, forecast generation, and API schema compliance:
 
 ```bash
-# Run pytest test suite
-pytest tests/test_pipeline.py -v
+# Run the whole suite (Open-Meteo is mocked; no network needed)
+pytest tests -v
 ```
+
+---
+
+## Limitations
+
+The temperature, heatwave and severity models were trained on only five cities (Pune, Mumbai, Delhi, Bengaluru and Shimla, 2015–2022). The API runs them anywhere in India, but accuracy is lower in climates unlike those five, such as the Thar desert, the Northeast, the islands or high Himalayan sites. The heatwave classifier caught 9 of 32 heatwave days in the 2024 test year. Weather and normals come from ~9–25 km gridded models, not station observations. The archive normals (ERA5) can run cooler than the forecast model, especially at coastal points such as Mumbai, which inflates departures there. Treat outputs as decision support, not as official IMD warnings.
 
 ---
 

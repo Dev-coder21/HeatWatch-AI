@@ -12,6 +12,8 @@ from src.openmeteo import get_json
 PLACES_FILE = "data/static/india_places.csv"
 # Snap a map click to a named place only if one is this close.
 REVERSE_MAX_KM = 15
+# Within this radius the most populous town wins over a closer suburb or village.
+PREFER_LARGEST_KM = 8
 
 
 def geocode(query, count=10):
@@ -51,6 +53,9 @@ def reverse(lat, lon):
     places = _places()
     distances = haversine_km(lat, lon, places["lat"].values, places["lon"].values)
     index = int(np.argmin(distances))
+    nearby = np.flatnonzero(distances <= PREFER_LARGEST_KM)
+    if nearby.size:
+        index = int(nearby[np.argmax(places["population"].values[nearby])])
     distance = float(distances[index])
     coordinate_label = f"{lat:.2f}, {lon:.2f}"
     if distance <= REVERSE_MAX_KM:

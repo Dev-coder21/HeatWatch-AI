@@ -130,10 +130,13 @@ def calculate_risk_score(
 def risk_category(score, thresholds):
     """Convert a 0-100 score into the configured risk category."""
 
-    categories = thresholds["risk_categories"]
+    categories = list(thresholds["risk_categories"].items())
 
-    for category, limits in categories.items():
-        if limits["min"] <= score <= limits["max"]:
+    # Bands are integer ranges (0-19, 20-39, ...); a fractional score such as
+    # 19.5 belongs to the lower band instead of falling into a gap.
+    for index, (category, limits) in enumerate(categories):
+        next_min = categories[index + 1][1]["min"] if index + 1 < len(categories) else None
+        if next_min is None or score < next_min:
             return category.replace("_", " ").title()
 
     return "Unknown"

@@ -1,0 +1,6 @@
+{
+  "status": 400,
+  "body": {
+    "detail": "51.500, -0.120 is outside India"
+  }
+}

@@ -73,8 +73,6 @@ six==1.17.0
 slicer==0.0.8
 stack-data==0.6.3
 starlette==1.6.0
-streamlit==1.63.0
-streamlit-folium==0.27.4
 threadpoolctl==3.6.0
 toml==0.10.2
 tornado==6.5.8
@@ -88,6 +86,4 @@ wcwidth==0.8.3
 websockets==16.1.1
 xyzservices==2026.9.1
 shapely==2.1.2
-cdsapi==0.7.7
-xarray==2026.9.0
-netCDF4==1.7.4
+httpx2==2.13.1

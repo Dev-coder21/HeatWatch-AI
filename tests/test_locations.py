@@ -1,13 +1,13 @@
+import datetime as dt
+
 import numpy as np
+import pandas as pd
 import pytest
 
-import importlib
-
-normals_module = importlib.import_module("src.locations.normals")
 from src.locations.geo import distance_to_coast_km, in_india, snap_to_grid
 from src.locations.geocode import check_in_india, reverse
-from src.locations.normals import evaluate, fit_harmonics
-from src.locations.profile import Cache, get_profile
+from src.locations.normals import compute_normals
+from src.locations.profile import Cache, get_normals, get_profile
 from src.locations.terrain import terrain_type
 
 # (lat, lon, elevation from the Open-Meteo 90 m DEM)
@@ -94,68 +94,77 @@ def test_reverse_remote_point_gets_coordinate_label():
     assert result["name"] == "27.90, 70.60"
 
 
-def test_harmonic_fit_recovers_seasonal_curve():
-    doy = np.tile(np.arange(1, 366), 5)
-    truth = 33 + 6 * np.sin(2 * np.pi * (doy - 80) / 365.25) + 1.5 * np.cos(4 * np.pi * doy / 365.25)
-    noisy = truth + np.random.default_rng(0).normal(0, 2, doy.size)
-    coefs = fit_harmonics(doy, noisy, harmonics=3)
-    fitted = evaluate(coefs, np.arange(1, 366))
-    assert np.abs(fitted - truth[:365]).max() < 0.5
-    # Smooth: no day-to-day jumps like the old monthly steps.
-    assert np.abs(np.diff(fitted)).max() < 0.2
+def fake_archive(calls):
+    """Archive stub: Tmax = 30 + day-of-year/100, so normals are predictable."""
+
+    def fetch(lat, lon, elevation, start, end):
+        calls.append({"lat": lat, "lon": lon, "elevation": elevation, "start": start, "end": end})
+        days = pd.date_range(start, end)
+        return pd.Series(30 + days.dayofyear / 100.0, index=days)
+
+    return fetch
+
+
+def test_normals_use_last_ten_complete_years():
+    calls = []
+    today = dt.date(2026, 5, 20)
+    normals = compute_normals(28.6, 77.2, 224.0, today=today, fetch=fake_archive(calls))
+    years = sorted(c["start"].year for c in calls)
+    assert years == list(range(2016, 2026))
+    # Covers today - 7 .. today + 7.
+    assert min(normals) == "2026-05-13" and max(normals) == "2026-05-27"
+    # Mean over a +/-7 day window of a linear series is the centre value.
+    assert normals["2026-05-20"] == pytest.approx(30 + 140 / 100.0, abs=0.02)
+
+
+def test_normals_cost_about_twenty_call_units():
+    calls = []
+    compute_normals(28.6, 77.2, 224.0, today=dt.date(2026, 5, 20), fetch=fake_archive(calls))
+    # Open-Meteo counts one call-unit per 14 days of data per request.
+    units = sum(max(1.0, ((c["end"] - c["start"]).days + 1) / 14) for c in calls)
+    assert len(calls) == 10
+    assert units <= 22
+
+
+def test_normals_handle_leap_day_and_year_boundary():
+    calls = []
+    normals = compute_normals(28.6, 77.2, 224.0, today=dt.date(2028, 2, 29), fetch=fake_archive(calls))
+    assert "2028-02-29" in normals
+    normals = compute_normals(28.6, 77.2, 224.0, today=dt.date(2026, 1, 2), fetch=fake_archive(calls))
+    assert "2025-12-26" in normals and "2026-01-09" in normals
 
 
 @pytest.fixture
-def tiny_grid(tmp_path, monkeypatch):
-    """A 3-cell normals grid; cell values encode a known annual mean."""
-    path = tmp_path / "grid.npz"
-    coefs = np.zeros((3, 7), dtype=np.float32)
-    coefs[:, 0] = [30.0, 35.0, 20.0]
-    np.savez(path, lat=np.array([28.6, 19.0, 31.1], np.float32), lon=np.array([77.2, 72.9, 77.2], np.float32), coefs=coefs)
-
-    original = normals_module.settings
-
-    def fake_settings():
-        cfg = dict(original())
-        cfg["normals"] = dict(cfg["normals"], grid_file=str(path))
-        return cfg
-
-    monkeypatch.setattr(normals_module, "settings", fake_settings)
-    normals_module._grid.cache_clear()
-    yield
-    normals_module._grid.cache_clear()
+def store(tmp_path, monkeypatch):
+    monkeypatch.setattr("src.locations.profile.fetch_elevation", lambda lat, lon: 217.0)
+    return Cache(tmp_path / "c.sqlite")
 
 
-def test_normals_lookup_nearest_cell(tiny_grid):
-    values = normals_module.normals(28.61, 77.21)
-    assert values.shape == (366,)
-    assert np.allclose(values, 30.0)
-
-
-def test_normals_fallback_to_nearest_valid_cell(tiny_grid):
-    # Offshore point near Mumbai uses the nearest land cell.
-    info = normals_module.normal_coefficients(18.95, 72.80)
-    assert info["cell_lat"] == pytest.approx(19.0)
-    assert info["cell_distance_km"] < 20
-
-
-def test_normals_too_far_raises(tiny_grid):
-    with pytest.raises(normals_module.NormalsUnavailable):
-        normals_module.normal_coefficients(23.0, 80.0)
-
-
-def test_profile_cached_after_first_call(tiny_grid, tmp_path, monkeypatch):
+def test_profile_cached_after_first_call(store, monkeypatch):
     calls = []
-
-    def fake_elevation(lat, lon):
-        calls.append((lat, lon))
-        return 217.0
-
-    monkeypatch.setattr("src.locations.profile.fetch_elevation", fake_elevation)
-    store = Cache(tmp_path / "c.sqlite")
+    monkeypatch.setattr("src.locations.profile.fetch_elevation", lambda lat, lon: calls.append(1) or 217.0)
     first = get_profile(28.61, 77.21, store=store)
     second = get_profile(28.63, 77.18, store=store)  # same 0.1 degree cell
     assert first == second
     assert len(calls) == 1
     assert first["terrain_type"] == "plains"
     assert first["grid_key"] == "28.60,77.20"
+
+
+def test_normals_cached_per_cell_and_day(store):
+    calls = []
+    profile = get_profile(28.61, 77.21, store=store)
+
+    def compute(lat, lon, elevation, today):
+        calls.append(1)
+        return compute_normals(lat, lon, elevation, today=today, fetch=fake_archive([]))
+
+    today = dt.date(2026, 5, 20)
+    get_normals(profile, today=today, store=store, compute=compute)
+    get_normals(profile, today=today, store=store, compute=compute)
+    assert len(calls) == 1
+
+
+def test_profile_outside_india_raises(store):
+    with pytest.raises(ValueError):
+        get_profile(51.5, -0.12, store=store)
