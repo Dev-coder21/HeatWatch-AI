@@ -1,0 +1,114 @@
+thar|Churu,Rajasthan
+thar|Phalodi,Rajasthan
+thar|Jaisalmer,Rajasthan
+thar|Barmer,Rajasthan
+thar|Bikaner,Rajasthan
+thar|Sri Ganganagar,Rajasthan
+thar|Jodhpur,Rajasthan
+thar|Kota,Rajasthan
+thar|Jaipur,Rajasthan
+west_semiarid|Ahmedabad,Gujarat
+west_semiarid|Rajkot,Gujarat
+igp|Delhi,Delhi
+igp|Hisar,Haryana
+igp|Ludhiana,Punjab
+igp|Amritsar,Punjab
+igp|Agra,Uttar Pradesh
+igp|Lucknow,Uttar Pradesh
+igp|Kanpur,Uttar Pradesh
+igp|Prayagraj,Uttar Pradesh
+igp|Banda,Uttar Pradesh
+igp|Jhansi,Uttar Pradesh
+igp|Varanasi,Uttar Pradesh
+igp|Gorakhpur,Uttar Pradesh
+igp|Patna,Bihar
+igp|Gaya,Bihar
+igp|Bhagalpur,Bihar
+central|Nagpur,Maharashtra
+central|Chandrapur,Maharashtra
+central|Wardha,Maharashtra
+central|Akola,Maharashtra
+central|Bhopal,Madhya Pradesh
+central|Indore,Madhya Pradesh
+central|Gwalior,Madhya Pradesh
+central|Jabalpur,Madhya Pradesh
+central|Khajuraho,Madhya Pradesh
+central|Raipur,Chhattisgarh
+central|Bilaspur,Chhattisgarh
+east_inland|Jharsuguda,Odisha
+east_inland|Titlagarh,Odisha
+east_inland|Sambalpur,Odisha
+east_inland|Angul,Odisha
+east_inland|Ranchi,Jharkhand
+east_inland|Daltonganj,Jharkhand
+east_inland|Asansol,West Bengal
+east_inland|Bankura,West Bengal
+deccan|Pune,Maharashtra
+deccan|Solapur,Maharashtra
+deccan|Aurangabad,Maharashtra
+deccan|Hyderabad,Telangana
+deccan|Ramagundam,Telangana
+deccan|Nizamabad,Telangana
+deccan|Kurnool,Andhra Pradesh
+deccan|Anantapur,Andhra Pradesh
+deccan|Vijayawada,Andhra Pradesh
+deccan|Raichur,Karnataka
+deccan|Kalaburagi,Karnataka
+deccan|Bengaluru,Karnataka
+deccan|Vellore,Tamil Nadu
+deccan|Madurai,Tamil Nadu
+deccan|Tiruchirappalli,Tamil Nadu
+deccan|Palakkad,Kerala
+west_coast|Mumbai,Maharashtra
+west_coast|Ratnagiri,Maharashtra
+west_coast|Panaji,Goa
+west_coast|Mangaluru,Karnataka
+west_coast|Kozhikode,Kerala
+west_coast|Kochi,Kerala
+west_coast|Thiruvananthapuram,Kerala
+west_coast|Veraval,Gujarat
+west_coast|Dwarka,Gujarat
+east_coast|Kolkata,West Bengal
+east_coast|Digha,West Bengal
+east_coast|Puri,Odisha
+east_coast|Paradip,Odisha
+east_coast|Visakhapatnam,Andhra Pradesh
+east_coast|Machilipatnam,Andhra Pradesh
+east_coast|Chennai,Tamil Nadu
+east_coast|Nellore,Andhra Pradesh
+east_coast|Nagapattinam,Tamil Nadu
+hills|Shimla,Himachal Pradesh
+hills|Manali,Himachal Pradesh
+igp_foothills|Dehradun,Uttarakhand
+hills|Mussoorie,Uttarakhand
+hills|Srinagar,Jammu and Kashmir
+hills|Leh,Ladakh
+hills|Darjeeling,West Bengal
+hills|Gangtok,Sikkim
+hills|Shillong,Meghalaya
+hills|Ooty,Tamil Nadu
+hills|Kodaikanal,Tamil Nadu
+northeast|Guwahati,Assam
+northeast|Silchar,Assam
+northeast|Imphal,Manipur
+northeast|Agartala,Tripura
+islands|Port Blair,Andaman and Nicobar Islands
+islands|Kavaratti,Lakshadweep
+hills|Mount Abu,Rajasthan
+hills|Nainital,Uttarakhand
+hills|Almora,Uttarakhand
+hills|Dharamshala,Himachal Pradesh
+hills|Kohima,Nagaland
+hills|Aizawl,Mizoram
+hills|Munnar,Kerala
+hills|Mahabaleshwar,Maharashtra|17.9232,73.6586
+hills|Madikeri,Karnataka
+hills|Pachmarhi,Madhya Pradesh
+west_coast|Porbandar,Gujarat
+west_coast|Karwar,Karnataka
+west_coast|Kannur,Kerala
+east_coast|Thoothukudi,Tamil Nadu
+east_coast|Rameswaram,Tamil Nadu
+east_coast|Kakinada,Andhra Pradesh
+east_coast|Cuddalore,Tamil Nadu
+east_coast|Balasore,Odisha

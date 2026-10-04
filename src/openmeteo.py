@@ -28,7 +28,7 @@ def get_json(url, params, retries=None, timeout=None):
         if response.status_code == 429 or response.status_code >= 500:
             last_error = UpstreamError(f"HTTP {response.status_code}: {response.text[:200]}")
             # Free-tier minute limits reset quickly; hourly ones need longer waits.
-            time.sleep(min(60 * (attempt + 1), 300) if response.status_code == 429 else 2 ** attempt)
+            time.sleep(min(60 * (attempt + 1), 300) if response.status_code == 429 else min(5 * 2 ** attempt, 60))
             continue
 
         data = response.json()
