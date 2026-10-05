@@ -1,0 +1,40 @@
+.planet { position: absolute; inset: 0; overflow: hidden; }
+.planet-host { position: absolute; inset: 0; }
+.earth-canvas { display: block; touch-action: none; cursor: grab; }
+.earth-canvas:active { cursor: grabbing; }
+.planet-labels { position: absolute; inset: 0; pointer-events: none; }
+
+/* City labels follow the top of each light beam. */
+.gl-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 0 0 6px;
+  border: 0;
+  background: none;
+  color: #e6f1f8;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.3s;
+  will-change: transform;
+}
+.gl-name {
+  font-family: var(--font-cond);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.95), 0 0 2px #000;
+}
+.gl-val {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--c, #fbbf24);
+  text-shadow: 0 1px 4px #000;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.gl-label:hover .gl-val, .gl-label.active .gl-val, .gl-label:focus-visible .gl-val { opacity: 1; }
+.gl-label.active .gl-name, .gl-label:hover .gl-name { color: #fff; text-shadow: 0 0 10px var(--c), 0 1px 6px #000; }

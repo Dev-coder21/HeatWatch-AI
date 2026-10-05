@@ -1,76 +1,206 @@
-* {
-  box-sizing: border-box;
+/* =====================================================================
+   HeatWatch AI — design system
+   Navy/black environment, cyan intelligence tones, heat ramp for data.
+   Violet belongs only to the Energy Orb identity on the landing page.
+   ===================================================================== */
+
+:root {
+  /* Environment */
+  --bg: #030508;
+  --bg-1: #060b10;
+  --bg-2: #0a1117;
+  --bg-3: #0e1820;
+
+  /* Intelligence tones */
+  --sky-1: #7dd3fc;
+  --sky-2: #38bdf8;
+  --sky-3: #0ea5e9;
+  --cyan-1: #67e8f9;
+  --cyan-2: #22d3ee;
+
+  /* Heat */
+  --heat-1: #fbbf24;
+  --heat-2: #f97316;
+  --heat-3: #ef4444;
+  --heat-4: #dc2626;
+  --cool: #38bdf8;
+
+  /* Orb identity (landing only) */
+  --orb: #ffa726;
+
+  /* Text */
+  --text: #e6f1f8;
+  --text-2: #a9bccb;
+  --muted: #6b8295;
+  --faint: #3b4f5f;
+
+  /* Panels */
+  --panel-bg: linear-gradient(180deg, rgba(14, 24, 32, 0.78), rgba(6, 11, 16, 0.72));
+  --panel-line: rgba(125, 211, 252, 0.16);
+  --panel-line-strong: rgba(125, 211, 252, 0.34);
+  --panel-head: rgba(56, 189, 248, 0.08);
+  --radius: 3px;
+
+  --font: "Barlow", system-ui, sans-serif;
+  --font-cond: "Barlow", system-ui, sans-serif;
+  --font-mono: "Barlow", system-ui, sans-serif;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  color-scheme: dark;
 }
 
-html {
-  margin: 0;
-  padding: 0;
-
-  width: 100%;
-  min-height: 100%;
-
-  background: #050807;
-
-  scroll-behavior: smooth;
-}
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; min-height: 100%; }
 
 body {
-  margin: 0;
-  padding: 0;
-
-  width: 100%;
-  min-height: 100%;
-
-  background: #050807;
-
-  color: #edf4ef;
-
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
-body,
-button,
-input,
-textarea,
-select {
-  font-family:
-    "Manrope",
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 1px solid var(--cyan-2); outline-offset: 2px; }
+
+.mono { font-family: var(--font-mono); }
+.num { font-family: var(--font); font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+
+/* Small uppercase technical label */
+.label {
+  font-family: var(--font-cond);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
-button {
-  -webkit-tap-highlight-color: transparent;
+/* ---------------------------------------------------------------------
+   Panel: dark glass, hairline border, title bar, corner ticks
+   --------------------------------------------------------------------- */
+.hw-panel {
+  position: relative;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-line);
+  border-radius: var(--radius);
+  backdrop-filter: blur(10px) saturate(1.15);
+  -webkit-backdrop-filter: blur(10px) saturate(1.15);
+  box-shadow: inset 0 1px 0 rgba(125, 211, 252, 0.06), 0 18px 40px rgba(0, 0, 0, 0.35);
 }
 
-#root {
-  width: 100%;
-  min-height: 100vh;
+.hw-panel::before,
+.hw-panel::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-color: var(--sky-2);
+  border-style: solid;
+  opacity: 0.7;
+  pointer-events: none;
+}
+.hw-panel::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+.hw-panel::after { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
+
+.hw-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 12px;
+  background: linear-gradient(90deg, var(--panel-head), transparent 80%);
+  border-bottom: 1px solid var(--panel-line);
 }
 
-::selection {
-  background: rgba(155, 230, 168, 0.18);
-  color: #ffffff;
+.hw-panel-title {
+  margin: 0;
+  font-family: var(--font-cond);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text);
 }
 
-::-webkit-scrollbar {
-  width: 7px;
+.hw-panel-body { padding: 10px 12px 12px; }
+
+/* Bracketed sub-title, as in "[ Country-wide total ]" */
+.bracket {
+  display: block;
+  text-align: center;
+  font-family: var(--font-cond);
+  font-size: 12px;
+  color: var(--text-2);
+  letter-spacing: 0.04em;
+}
+.bracket::before { content: "[ "; color: var(--muted); }
+.bracket::after { content: " ]"; color: var(--muted); }
+
+/* Delta chip, e.g. ↑ 1.4 */
+.delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  border: 1px solid currentColor;
+  background: color-mix(in srgb, currentColor 14%, transparent);
 }
 
-::-webkit-scrollbar-track {
-  background: #050807;
+.hw-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid var(--panel-line-strong);
+  border-radius: var(--radius);
+  background: rgba(56, 189, 248, 0.06);
+  font-family: var(--font-cond);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.hw-btn:hover { background: rgba(56, 189, 248, 0.14); border-color: var(--sky-1); }
+
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #1a2a36; }
+::-webkit-scrollbar-track { background: transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(155, 230, 168, 0.16);
-  border-radius: 999px;
-}
+/* ---------------------------------------------------------------------
+   Shared pieces: metrics, legend, chart tooltip
+   --------------------------------------------------------------------- */
+.metric { display: flex; flex-direction: column; gap: 4px; }
+.metric-row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.metric-value { line-height: 1; font-weight: 500; }
+.metric-value small { margin-left: 3px; font-size: 0.42em; color: var(--text-2); font-weight: 400; }
+.metric-lg .metric-value { font-size: 42px; }
+.metric-md .metric-value { font-size: 26px; }
+.metric-sm .metric-value { font-size: 20px; }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(155, 230, 168, 0.28);
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-family: var(--font-mono); font-size: 10px; color: var(--text-2); }
+.legend-v { flex-direction: column; gap: 6px; }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.legend i { display: inline-block; width: 9px; height: 9px; box-shadow: 0 0 6px rgba(0, 0, 0, 0.4); }
+
+.chart-tip {
+  padding: 7px 10px;
+  border: 1px solid var(--panel-line-strong);
+  background: rgba(6, 11, 16, 0.94);
+  font-size: 12px;
+  min-width: 130px;
 }
+.chart-tip-row { display: flex; justify-content: space-between; gap: 12px; }

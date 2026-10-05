@@ -63,7 +63,10 @@ Heatwaves are among the deadliest extreme weather events driven by climate chang
   - Global feature importance summaries for transparent model governance.
 - **Composite Heat Risk Score (CHRS)**: Weighted multi-criteria index categorizing risk into 5 actionable levels: `Low`, `Moderate`, `High`, `Very High`, and `Extreme`.
 - **FastAPI REST Service**: Clean, typed endpoints with CORS support, sub-millisecond response times, and automated OpenAPI documentation.
-- **Modern React + Vite Dashboard**: Real-time hotspot maps, severity gauges, historical comparisons, interactive charts, and SHAP feature impact visualizers.
+- **Cinematic data-visualization frontend** (React + Vite), in three connected stages:
+  1. **Landing** — the ThreeUI Energy Orb (exact registered source, hash-verified) with a transition into the planet view.
+  2. **India heat intelligence** — a WebGL Earth (NASA Blue Marble, procedural clouds) centred on India, with an extruded heat-voxel field interpolated from the featured cities, risk spikes, a 7-day scrubber, metric panels, city ranking and a 15-day national progression trend; scroll reveals a city × day heat matrix, forecast-vs-normal, risk composition and departure-vs-probability charts.
+  3. **City heat intelligence** — a tilted aerial satellite view of any place in India with the assessed grid cell highlighted, surrounded by profile, risk radar and composition, 7-day forecast, outlook and 15-day temperature panels; scroll reveals SHAP waterfall and probability drivers, the IMD rule check and audience advisories.
 
 ---
 
@@ -289,7 +292,11 @@ npm install
 # Start development server
 npm run dev
 ```
-Open your browser at **`http://localhost:5173`** to access the HeatWatch AI Dashboard.
+Open your browser at **`http://localhost:5173`** (or the port Vite prints). The API base defaults to `http://localhost:8000`; set `VITE_API_BASE` in `frontend/.env` to change it, and make sure the frontend's origin is listed in `CORS_ORIGINS` in the backend `.env`.
+
+The landing page, India view and city view are hash routes (`#/`, `#/india`, `#/city?lat=&lon=`). Heavy scenes (WebGL globe, maps, charts) load only after the landing page, pause when off-screen, and respect `prefers-reduced-motion`.
+
+**Visual data credits:** Earth texture — NASA Blue Marble Next Generation (public domain). Aerial imagery and place labels — Esri World Imagery (© Esri, Maxar, Earthstar Geographics). Country boundaries — Natural Earth via `world-atlas`. Energy Orb — ThreeUI `GlobeCollection` (`energy-orb`), vendored unmodified in `frontend/src/shaders/`.
 
 ---
 
@@ -323,7 +330,7 @@ pytest tests -v
 
 ## Limitations
 
-The temperature, heatwave and severity models were trained on only five cities (Pune, Mumbai, Delhi, Bengaluru and Shimla, 2015–2022). The API runs them anywhere in India, but accuracy is lower in climates unlike those five, such as the Thar desert, the Northeast, the islands or high Himalayan sites. The heatwave classifier caught 9 of 32 heatwave days in the 2024 test year. Weather and normals come from ~9–25 km gridded models, not station observations. Normals come from ERA5 reanalysis and are shifted by the forecast-vs-ERA5 difference measured over the last ~9 overlapping days (`normal_bias_correction_c`). That removes most of the gap between the two sources, but a 9-day sample is noisy. ERA5 cells near the coast can still run cooler than the city's weather station. For Mumbai in early October 2026 the corrected normal is ~31.7 °C, against a station normal of roughly 33–34 °C. Treat outputs as decision support, not as official IMD warnings.
+The temperature, heatwave and severity models were trained on only five cities (Pune, Mumbai, Delhi, Bengaluru and Shimla, 2015–2022). The API runs them anywhere in India, but accuracy is lower in climates unlike those five, such as the Thar desert, the Northeast, the islands or high Himalayan sites. The heatwave classifier caught 23 of 32 heatwave days in the 2024 test year, with 16 false alarms. Weather and normals come from ~9–25 km gridded models, not station observations. Normals come from ERA5 reanalysis and are shifted by the forecast-vs-ERA5 difference measured over the last ~9 overlapping days (`normal_bias_correction_c`). That removes most of the gap between the two sources, but a 9-day sample is noisy. ERA5 cells near the coast can still run cooler than the city's weather station. For Mumbai in early October 2026 the corrected normal is ~31.7 °C, against a station normal of roughly 33–34 °C. Treat outputs as decision support, not as official IMD warnings.
 
 ---
 

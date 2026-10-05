@@ -1,0 +1,141 @@
+.landing {
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  min-height: 560px;
+  overflow: hidden;
+  background: #0a0500;
+}
+
+/* The orb's size follows its frame's height, so the frame covers the upper
+   part of the screen; its lower edge fades into a matching CSS star field. */
+.shader-frame {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 74vh;
+  -webkit-mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
+}
+
+.landing::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 8% 82%, #ffd699aa 50%, transparent 51%),
+    radial-gradient(1px 1px at 22% 92%, #ffffff66 50%, transparent 51%),
+    radial-gradient(1.4px 1.4px at 37% 86%, #ffc97088 50%, transparent 51%),
+    radial-gradient(1px 1px at 61% 95%, #ffffff55 50%, transparent 51%),
+    radial-gradient(1px 1px at 74% 80%, #ffb84d99 50%, transparent 51%),
+    radial-gradient(1.4px 1.4px at 88% 90%, #ffffff66 50%, transparent 51%),
+    radial-gradient(1px 1px at 95% 78%, #ffd08877 50%, transparent 51%);
+}
+
+.landing-flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 37%, #ffffff 0%, #ffe0a0 18%, #f97316 42%, #0a0500 78%);
+}
+
+.landing-copy {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: clamp(28px, 8vh, 84px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 16px;
+}
+
+.landing-title {
+  margin: 0;
+  font-family: var(--font);
+  font-weight: 300;
+  font-size: clamp(38px, 6.4vw, 92px);
+  letter-spacing: 0.18em;
+  line-height: 1;
+  color: #f1f5ff;
+  text-shadow: 0 0 32px rgba(255, 160, 50, 0.55);
+}
+.landing-title span { display: inline-block; }
+.landing-ai {
+  margin-left: 0.32em;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 0 22px rgba(255, 160, 50, 0.9), 0 0 2px #fff;
+}
+
+.landing-sub {
+  margin: 18px 0 30px;
+  font-family: var(--font-cond);
+  font-size: clamp(11px, 1.1vw, 14px);
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: #c8a870;
+}
+
+.landing-enter {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 26px;
+  border: 1px solid rgba(255, 190, 100, 0.35);
+  border-radius: 2px;
+  background: rgba(30, 15, 0, 0.35);
+  backdrop-filter: blur(6px);
+  font-family: var(--font-cond);
+  font-size: 13px;
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;
+  text-transform: uppercase;
+  color: #eef1ff;
+  cursor: pointer;
+  transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+}
+.landing-enter:hover {
+  border-color: #ffc878;
+  background: rgba(255, 160, 50, 0.16);
+  box-shadow: 0 0 28px rgba(255, 160, 50, 0.45);
+}
+.landing-enter i {
+  position: absolute;
+  left: 50%;
+  bottom: -26px;
+  width: 1px;
+  height: 18px;
+  background: linear-gradient(#ffc878, transparent);
+  animation: drip 2s ease-in-out infinite;
+}
+@keyframes drip {
+  0% { transform: scaleY(0); transform-origin: top; opacity: 0; }
+  40% { transform: scaleY(1); opacity: 1; }
+  100% { transform: translateY(10px) scaleY(0.2); opacity: 0; }
+}
+
+.landing-ticker {
+  margin: 44px 0 0;
+  min-height: 16px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: #8a7050;
+}
+.tick-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: #22d3ee;
+  box-shadow: 0 0 8px #22d3ee;
+  vertical-align: middle;
+  animation: blink 1.6s ease-in-out infinite;
+}
+@keyframes blink { 50% { opacity: 0.3; } }
